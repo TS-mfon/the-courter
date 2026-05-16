@@ -10,7 +10,7 @@ export const courts = [
 export const bradburyNetwork = {
   label: "Bradbury testnet",
   primaryRpc: "https://zksync-os-testnet-genlayer.zksync.dev",
-  fallbackRpc: "https://rpc.bradbury.genlayer.com",
+  fallbackRpc: "https://zksync-os-testnet-genlayer.zksync.dev",
   explorerBaseUrl: "https://zksync-os-testnet-genlayer.explorer.zksync.dev"
 } as const;
 
