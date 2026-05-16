@@ -35,7 +35,7 @@ export default function PublicCasesPage() {
             </div>
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
               <span className="rounded border border-court-gold/30 px-3 py-1">Confidence {Math.round(item.verdict.confidence * 100)}%</span>
-              <span className="rounded border border-court-gold/30 px-3 py-1">Winner {item.verdict.finalized ? item.verdict.winner : "not finalized"}</span>
+              <span className="rounded border border-court-gold/30 px-3 py-1">Winner {item.verdict.winner}</span>
               <span className="rounded border border-court-gold/30 px-3 py-1">Judges {item.verdict.judges_used.join(", ")}</span>
             </div>
           </Panel>

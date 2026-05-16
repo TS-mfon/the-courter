@@ -22,7 +22,19 @@ export default function CourtroomPage() {
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("case");
-    if (id) apiGet<ApiCase>(`/cases/${id}`).then(setActiveCase).catch(() => setActiveCase(null));
+    if (!id) return;
+    let cancelled = false;
+    const load = () => apiGet<ApiCase>(`/cases/${id}`).then((data) => {
+      if (!cancelled) setActiveCase(data);
+    }).catch(() => {
+      if (!cancelled) setActiveCase(null);
+    });
+    load();
+    const timer = setInterval(load, 12000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
   useEffect(() => {
     const timer = setInterval(() => setStage((current) => Math.min(stages.length - 1, current + 1)), 900);
@@ -47,7 +59,7 @@ export default function CourtroomPage() {
                 <div>
                   <StepBadge>{stages[stage]}</StepBadge>
                   <p className="mt-6 font-serif text-4xl text-court-gold md:text-6xl">
-                    {stage < 7 ? "Your Fate is in the Hands of The Jury" : activeCase.verdict.finalized ? "Verdict Ready" : "GenLayer Contract Required"}
+                    {stage < 7 ? "Your Fate is in the Hands of The Jury" : activeCase.verdict.finalized ? "Verdict Ready" : "Draft Verdict Ready"}
                   </p>
                   <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-4">
                     {activeCase.verdict.judges_used.map((judge) => (
@@ -63,7 +75,7 @@ export default function CourtroomPage() {
             <p className="mt-2 text-sm text-court-mist/60">{activeCase.country} / {activeCase.dispute_type} / {activeCase.court_type}</p>
             <div className="mt-5 flex justify-center"><VerdictSeal confidence={activeCase.verdict.confidence} /></div>
             <p className="mt-5 rounded border border-court-gold/30 bg-court-gold/10 p-4 font-serif text-2xl text-court-gold">
-              {activeCase.verdict.finalized ? `Winner: ${activeCase.verdict.winner}` : "No final verdict until GenLayer resolves this dispute"}
+              {activeCase.verdict.finalized ? `Winner: ${activeCase.verdict.winner}` : `Draft Winner: ${activeCase.verdict.winner}`}
             </p>
             <p className="mt-4 font-serif text-xl text-court-gold">{activeCase.verdict.headline_verdict || activeCase.plain_english_verdict}</p>
             <p className="mt-3 text-sm leading-6 text-court-mist/75">{activeCase.verdict.final_conclusion || activeCase.plain_english_verdict}</p>

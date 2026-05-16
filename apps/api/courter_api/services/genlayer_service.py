@@ -4,6 +4,7 @@ import base64
 import json
 import re
 import subprocess
+import sys
 import time
 from typing import Any
 
@@ -129,7 +130,7 @@ def write_contract(court_type: str, method: str, payload: dict[str, Any], case_i
     try:
         root = resolve_project_root("scripts")
         completed = subprocess.run(
-            ["python3", str(root / "scripts" / "write_studionet_contract.py")],
+            [sys.executable, str(root / "scripts" / "write_studionet_contract.py")],
             input=script_payload,
             check=False,
             capture_output=True,

@@ -9,7 +9,18 @@ export default function CasePage({ params }: { params: { id: string } }) {
   const [caseRecord, setCaseRecord] = useState<ApiCase | null>(null);
 
   useEffect(() => {
-    apiGet<ApiCase>(`/cases/${params.id}`).then(setCaseRecord).catch(() => setCaseRecord(null));
+    let cancelled = false;
+    const load = () => apiGet<ApiCase>(`/cases/${params.id}`).then((data) => {
+      if (!cancelled) setCaseRecord(data);
+    }).catch(() => {
+      if (!cancelled) setCaseRecord(null);
+    });
+    load();
+    const timer = setInterval(load, 12000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, [params.id]);
 
   return (
@@ -26,7 +37,7 @@ export default function CasePage({ params }: { params: { id: string } }) {
               <h2 className="font-serif text-3xl text-court-gold">Final Verdict</h2>
               {!caseRecord.verdict.finalized ? (
                 <div className="mt-4 rounded border border-court-crimson/50 bg-court-crimson/15 p-4">
-                  <p className="font-serif text-2xl text-court-gold">Awaiting Final Result</p>
+                  <p className="font-serif text-2xl text-court-gold">Draft Verdict Live, Finality Pending</p>
                   <p className="mt-2 text-sm leading-6 text-court-mist/75">{caseRecord.plain_english_verdict}</p>
                 </div>
               ) : (
@@ -92,7 +103,7 @@ export default function CasePage({ params }: { params: { id: string } }) {
 
           <div className="grid content-start gap-4">
             <Panel><VerdictSeal confidence={caseRecord.verdict.confidence} /></Panel>
-            <Stat label="Winner" value={caseRecord.verdict.finalized ? caseRecord.verdict.winner : "pending"} />
+            <Stat label="Winner" value={caseRecord.verdict.winner} />
             <Stat label="Court" value={caseRecord.court_type} />
             <Stat label="OCR" value={caseRecord.ocr?.degraded ? "degraded" : `${caseRecord.ocr?.files_processed || 0} files`} />
             <Panel>

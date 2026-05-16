@@ -184,6 +184,83 @@ def public_case_record(record: dict[str, Any]) -> dict[str, Any]:
     return _public_case_record(record)
 
 
+def _contract_payload_for_record(record: dict[str, Any]) -> dict[str, Any]:
+    verdict = record.get("verdict") or {}
+    return {
+        "case_id": record["id"],
+        "case_input": record.get("input", {}),
+        "retrieved_laws": record.get("retrieved_laws", []),
+        "structured_evidence": record.get("structured_evidence", []),
+        "judge_profiles": [item for item in load_judge_profiles() if item["name"] in verdict.get("judges_used", [])],
+        "judge_reasoning": record.get("judge_reasoning", []),
+        "contradiction_report": record.get("contradiction_report", {}),
+        "route_to_complex_analysis": (record.get("admin_diagnostics") or {}).get("route_to_complex_analysis", False),
+        "timeline": record.get("timeline", []),
+        "fraud_report": record.get("fraud_report", {}),
+        "judgment_draft": verdict,
+    }
+
+
+def _pending_copy(verdict: Verdict) -> dict[str, Any]:
+    data = verdict.model_dump()
+    data["finalized"] = False
+    data["reasoning_summary"] = [
+        "The contract was triggered on submission and the draft verdict below is already available.",
+        "GenLayer finality is still pending, so the case will keep refreshing until the onchain result is confirmed.",
+    ]
+    return data
+
+
+def refresh_case_finalization(record: dict[str, Any]) -> dict[str, Any]:
+    if record.get("status") == "finalized":
+        return record
+
+    diagnostics = record.setdefault("admin_diagnostics", {})
+    genlayer = diagnostics.setdefault("genlayer", {})
+    write = genlayer.get("write") or {}
+    tx_hash = write.get("tx_hash", "")
+    court_type = "inner" if record.get("court_type") == "inner" else "public"
+
+    if not tx_hash:
+        payload = _contract_payload_for_record(record)
+        write = write_contract(court_type, "submit_inner_case" if court_type == "inner" else "submit_case", payload, record["id"])
+        genlayer["write"] = write
+        tx_hash = write.get("tx_hash", "")
+
+    receipt = finalized_receipt(tx_hash, record["id"])
+    genlayer["receipt"] = receipt
+    contract_finalized = write.get("status") == "FINALIZED" or receipt.get("status") == "FINALIZED"
+
+    current_verdict = record.get("verdict") or {}
+    contract_judgment = extract_contract_judgment(write, receipt)
+    final_verdict = contract_judgment or current_verdict
+    if contract_finalized:
+        final_verdict["finalized"] = True
+        final_verdict.setdefault("headline_verdict", current_verdict.get("headline_verdict", "Final verdict ready."))
+        final_verdict.setdefault("final_conclusion", current_verdict.get("final_conclusion", "The court finalized the onchain result."))
+        final_verdict.setdefault("filing_summary", current_verdict.get("filing_summary", record.get("dispute_type", "Civil filing")))
+        final_verdict.setdefault("evidence_overview", current_verdict.get("evidence_overview", ""))
+        final_verdict.setdefault("judge_panels", current_verdict.get("judge_panels", []))
+        final_verdict.setdefault("law_citations", current_verdict.get("law_citations", []))
+        record["status"] = "finalized"
+        record["verdict"] = final_verdict
+        record["plain_english_verdict"] = final_verdict.get("headline_verdict", current_verdict.get("headline_verdict", "Final verdict ready."))
+        audit("verdict_generated", actor_type="system", actor_id="court-engine", entity_type="case", entity_id=record["id"], metadata={"winner": final_verdict.get("winner"), "confidence": final_verdict.get("confidence"), "contract_finalized": True})
+    else:
+        record["status"] = "awaiting_genlayer_contract"
+        current_verdict["finalized"] = False
+        current_verdict["reasoning_summary"] = [
+            "The contract was triggered on submission and the draft verdict below is already available.",
+            "GenLayer finality is still pending, so the case will keep refreshing until the onchain result is confirmed.",
+        ]
+        record["verdict"] = current_verdict
+        record["plain_english_verdict"] = current_verdict.get("headline_verdict", "Draft verdict available while finality completes.")
+        audit("verdict_pending", actor_type="system", actor_id="court-engine", entity_type="case", entity_id=record["id"], severity="warning", metadata={"winner": current_verdict.get("winner"), "confidence": current_verdict.get("confidence"), "contract_finalized": False, "tx_hash": tx_hash})
+
+    repo.save_case(record)
+    return record
+
+
 def create_case_record(
     *,
     case: CaseIntake,
@@ -216,7 +293,7 @@ def create_case_record(
     court_type = "inner" if case.court_type == "inner" else "public"
     contract = write_contract(court_type, "submit_inner_case" if court_type == "inner" else "submit_case", contract_payload, case_id)
     receipt = finalized_receipt(contract.get("tx_hash", ""), case_id)
-    contract_finalized = receipt.get("status") == "FINALIZED"
+    contract_finalized = contract.get("status") == "FINALIZED" or receipt.get("status") == "FINALIZED"
     contract_judgment = extract_contract_judgment(contract, receipt)
     final_verdict = contract_judgment or verdict.model_dump()
     final_verdict["finalized"] = contract_finalized
@@ -244,18 +321,11 @@ def create_case_record(
         "fraud_report": fraud,
         "retrieved_laws": legal_chunks,
         "judge_reasoning": judge_reasoning,
-        "verdict": final_verdict if contract_finalized else {
-            **verdict.model_dump(),
-            "finalized": False,
-            "reasoning_summary": [
-                "Backend preprocessing completed, but the verdict is not finalized yet because the court is still awaiting a final GenLayer result.",
-                "This page will render the judge panels and final conclusion as soon as the contract result is confirmed."
-            ],
-        },
+        "verdict": final_verdict if contract_finalized else _pending_copy(verdict),
         "plain_english_verdict": (
             final_verdict.get("headline_verdict", verdict.headline_verdict)
             if contract_finalized
-            else "The court is still verifying payment, evidence, laws, and contract finalization before releasing the verdict."
+            else verdict.headline_verdict
         ),
         "ocr": {
             "files_processed": len(extracted_files),
@@ -278,4 +348,6 @@ def create_case_record(
     }
     repo.save_case(record)
     audit("verdict_generated" if contract_finalized else "verdict_pending", actor_type="system", actor_id="court-engine", entity_type="case", entity_id=case_id, severity="info" if contract_finalized else "warning", metadata={"winner": final_verdict.get("winner", verdict.winner), "confidence": final_verdict.get("confidence", verdict.confidence), "contract_finalized": contract_finalized})
+    if not contract_finalized:
+        record = refresh_case_finalization(record)
     return public_case_record(record)

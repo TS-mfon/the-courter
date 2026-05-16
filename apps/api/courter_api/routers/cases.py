@@ -7,7 +7,7 @@ from courter_shared.constants import COURT_FEES_GEN
 
 from ..config import get_settings
 from ..services.audit import audit
-from ..services.courts import CourtConfigurationError, create_case_record, public_case_record, reject_criminal_case
+from ..services.courts import CourtConfigurationError, create_case_record, public_case_record, refresh_case_finalization, reject_criminal_case
 from ..services.evidence import detect_contradictions, evidence_quality, extract_text, fraud_report, reconstruct_timeline, structure_text_evidence
 from ..services.payments import consume_verified_payment, verify_payment
 from ..services.repository import repo
@@ -117,7 +117,12 @@ async def submit_case(
 
 @router.get("/")
 def list_cases(public: bool = False) -> dict:
-    return {"cases": [public_case_record(case) for case in repo.list_cases(public_only=public)]}
+    cases = []
+    for case in repo.list_cases(public_only=public):
+        if case.get("status") == "awaiting_genlayer_contract":
+            case = refresh_case_finalization(case)
+        cases.append(public_case_record(case))
+    return {"cases": cases}
 
 
 @router.get("/{case_id}")
@@ -125,4 +130,6 @@ def get_case(case_id: str) -> dict:
     record = repo.get_case(case_id)
     if not record:
         raise HTTPException(status_code=404, detail="Case not found")
+    if record.get("status") == "awaiting_genlayer_contract":
+        record = refresh_case_finalization(record)
     return public_case_record(record)
