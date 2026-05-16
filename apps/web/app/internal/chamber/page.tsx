@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { apiBase, apiGet, type ApiCase, type Proposal } from "../../lib/api";
 import { Panel, Shell, Stat } from "../../ui";
 
@@ -17,44 +17,81 @@ type AuditLog = {
 };
 
 export default function InternalChamberPage() {
-  const [secret, setSecret] = useState("rottwiller123");
+  const [secret, setSecret] = useState("");
   const [cases, setCases] = useState<ApiCase[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [health, setHealth] = useState<any>(null);
   const [filter, setFilter] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
-  async function loadAdmin() {
-    const [proposalData] = await Promise.all([
-      apiGet<{ proposals: Proposal[] }>("/shadow-council/proposals")
-    ]);
-    setProposals(proposalData.proposals);
-    const [caseRes, auditRes, healthRes] = await Promise.all([
-      fetch(`${apiBase}/admin/cases`, { headers: { "x-admin-secret": secret } }).then((res) => res.json()),
-      fetch(`${apiBase}/admin/audit-logs`, { headers: { "x-admin-secret": secret } }).then((res) => res.json()),
-      fetch(`${apiBase}/admin/system-health`, { headers: { "x-admin-secret": secret } }).then((res) => res.json())
-    ]);
-    setCases(caseRes.cases || []);
-    setLogs(auditRes.events || []);
-    setHealth(healthRes);
+  async function adminGet<T>(path: string): Promise<T> {
+    const response = await fetch(`${apiBase}${path}`, {
+      cache: "no-store",
+      headers: { "x-admin-secret": secret }
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(async () => ({ detail: await response.text() }));
+      throw new Error(typeof error.detail === "string" ? error.detail : "Admin request failed");
+    }
+    return response.json();
   }
 
-  useEffect(() => { loadAdmin().catch(() => undefined); }, []);
+  async function loadAdmin() {
+    if (!secret.trim()) {
+      setAuthError("Enter the admin password to unlock the chamber.");
+      return;
+    }
+    setUnlocking(true);
+    setAuthError("");
+    try {
+      const [proposalData, caseRes, auditRes, healthRes] = await Promise.all([
+        apiGet<{ proposals: Proposal[] }>("/shadow-council/proposals"),
+        adminGet<{ cases: ApiCase[] }>("/admin/cases"),
+        adminGet<{ events: AuditLog[] }>("/admin/audit-logs"),
+        adminGet<any>("/admin/system-health")
+      ]);
+      setProposals(proposalData.proposals);
+      setCases(caseRes.cases || []);
+      setLogs(auditRes.events || []);
+      setHealth(healthRes);
+      setIsUnlocked(true);
+    } catch (error) {
+      setIsUnlocked(false);
+      setCases([]);
+      setLogs([]);
+      setHealth(null);
+      setProposals([]);
+      setAuthError(error instanceof Error ? error.message : "Admin authentication failed.");
+    } finally {
+      setUnlocking(false);
+    }
+  }
+
   const visibleLogs = logs.filter((log) => JSON.stringify(log).toLowerCase().includes(filter.toLowerCase()));
+  const fraudAlerts = useMemo(() => cases.filter((item) => item.fraud_report?.suspicious).length, [cases]);
 
   return (
     <Shell title="Internal Chamber" kicker="Secret admin panel">
       <Panel>
         <h2 className="font-serif text-2xl text-court-gold">Admin Access</h2>
         <div className="mt-4 flex flex-wrap gap-3">
-          <input className="min-w-72 rounded border border-white/10 bg-black/40 px-3 py-3" value={secret} onChange={(event) => setSecret(event.target.value)} placeholder="Admin secret" />
-          <button className="rounded bg-court-gold px-5 py-3 font-semibold text-black" onClick={() => loadAdmin()}>Refresh Chamber</button>
+          <input className="min-w-72 rounded border border-white/10 bg-black/40 px-3 py-3" type="password" value={secret} onChange={(event) => setSecret(event.target.value)} placeholder="Admin password" />
+          <button className="rounded bg-court-gold px-5 py-3 font-semibold text-black disabled:cursor-not-allowed disabled:opacity-60" disabled={unlocking} onClick={() => loadAdmin()}>
+            {unlocking ? "Unlocking..." : isUnlocked ? "Refresh Chamber" : "Unlock Admin"}
+          </button>
         </div>
+        {authError ? <p className="mt-4 rounded border border-court-crimson/40 bg-court-crimson/10 p-3 text-sm">{authError}</p> : null}
+        {!isUnlocked ? <p className="mt-4 text-sm text-court-mist/70">Protected system data stays hidden until the admin password is verified.</p> : null}
       </Panel>
 
+      {!isUnlocked ? null : (
+        <>
       <div className="mt-6 grid gap-4 md:grid-cols-4">
         <Stat label="Disputes" value={cases.length} />
-        <Stat label="Fraud Alerts" value={cases.filter((item) => item.fraud_report?.suspicious).length} />
+        <Stat label="Fraud Alerts" value={fraudAlerts} />
         <Stat label="Council Proposals" value={proposals.length} />
         <Stat label="Audit Events" value={logs.length} />
       </div>
@@ -140,6 +177,8 @@ export default function InternalChamberPage() {
           </table>
         </div>
       </Panel>
+        </>
+      )}
     </Shell>
   );
 }

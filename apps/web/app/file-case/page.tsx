@@ -141,6 +141,7 @@ export default function FileCasePage() {
 
           <Panel>
             <StepBadge>Step 2 - Court And Dispute</StepBadge>
+            <h2 className="mt-3 font-serif text-2xl text-court-gold">Choose the court and load a test case if needed</h2>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               <select className="rounded border border-white/10 bg-black/40 px-3 py-3" value={court} onChange={(event) => setCourt(event.target.value)}>
                 {courts.slice(0, 2).map((item) => <option key={item.id} value={item.id}>{item.name} - {item.fee} GEN</option>)}
@@ -151,6 +152,18 @@ export default function FileCasePage() {
               <select className="rounded border border-white/10 bg-black/40 px-3 py-3" value={disputeType} onChange={(event) => setDisputeType(event.target.value)}>
                 {disputeTypes.map((item) => <option key={item}>{item}</option>)}
               </select>
+            </div>
+            <div className="mt-5 rounded border border-white/10 bg-black/30 p-4">
+              <h3 className="font-serif text-xl text-court-gold">Load A Test Template</h3>
+              <p className="mt-2 text-sm text-court-mist/70">Use these examples to test the filing flow, law retrieval, judge reasoning, and contract submission without writing a case from scratch.</p>
+              <div className="mt-4 grid gap-2 md:grid-cols-2">
+                {testCaseExamples.map((example) => (
+                  <button key={example.id} className="rounded border border-white/10 bg-black/40 px-3 py-3 text-left text-sm text-court-mist hover:border-court-gold/40" onClick={() => loadExample(example.id)}>
+                    <div className="font-semibold text-court-gold">{example.title}</div>
+                    <div className="mt-1 text-court-mist/70">{example.country} • {example.disputeType}</div>
+                  </button>
+                ))}
+              </div>
             </div>
           </Panel>
 
@@ -210,14 +223,7 @@ export default function FileCasePage() {
           </Panel>
           <Panel>
             <h3 className="font-serif text-xl text-court-gold">5 Test Examples</h3>
-            <div className="mt-3 grid gap-2">
-              {testCaseExamples.map((example) => (
-                <button key={example.id} className="rounded border border-white/10 bg-black/40 px-3 py-3 text-left text-sm text-court-mist hover:border-court-gold/40" onClick={() => loadExample(example.id)}>
-                  <div className="font-semibold text-court-gold">{example.title}</div>
-                  <div className="mt-1 text-court-mist/70">{example.country} • {example.disputeType}</div>
-                </button>
-              ))}
-            </div>
+            <p className="mt-3 text-sm text-court-mist/70">Templates are available in the main filing flow above. Pick one there to load a full civil test case into the form.</p>
           </Panel>
         </div>
       </div>
