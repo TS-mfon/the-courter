@@ -1,4 +1,4 @@
-export const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://172.236.110.179:8001";
+export const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export async function apiGet<T>(path: string): Promise<T> {
   const response = await fetch(`${apiBase}${path}`, { cache: "no-store" });
