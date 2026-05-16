@@ -1,0 +1,87 @@
+[
+  {
+    "country": "Indonesia",
+    "category": "property",
+    "section_id": "IND-PRO-001",
+    "title": "Property Ownership Validation Section 1",
+    "keywords": [
+      "property",
+      "ownership",
+      "registry"
+    ],
+    "summary": "Defines property ownership verification requirements.",
+    "content": "Property ownership claims should be supported by officially recognized title and registry documentation.",
+    "importance": 0.83,
+    "related_sections": [
+      "IND-PRO-001"
+    ]
+  },
+  {
+    "country": "Indonesia",
+    "category": "property",
+    "section_id": "IND-PRO-002",
+    "title": "Property Ownership Validation Section 2",
+    "keywords": [
+      "property",
+      "ownership",
+      "registry"
+    ],
+    "summary": "Defines property ownership verification requirements.",
+    "content": "Property ownership claims should be supported by officially recognized title and registry documentation.",
+    "importance": 0.86,
+    "related_sections": [
+      "IND-PRO-001"
+    ]
+  },
+  {
+    "country": "Indonesia",
+    "category": "property",
+    "section_id": "IND-PRO-003",
+    "title": "Property Ownership Validation Section 3",
+    "keywords": [
+      "property",
+      "ownership",
+      "registry"
+    ],
+    "summary": "Defines property ownership verification requirements.",
+    "content": "Property ownership claims should be supported by officially recognized title and registry documentation.",
+    "importance": 0.89,
+    "related_sections": [
+      "IND-PRO-002"
+    ]
+  },
+  {
+    "country": "Indonesia",
+    "category": "property",
+    "section_id": "IND-PRO-004",
+    "title": "Property Ownership Validation Section 4",
+    "keywords": [
+      "property",
+      "ownership",
+      "registry"
+    ],
+    "summary": "Defines property ownership verification requirements.",
+    "content": "Property ownership claims should be supported by officially recognized title and registry documentation.",
+    "importance": 0.92,
+    "related_sections": [
+      "IND-PRO-003"
+    ]
+  },
+  {
+    "country": "Indonesia",
+    "category": "property",
+    "section_id": "IND-PRO-005",
+    "title": "Property Ownership Validation Section 5",
+    "keywords": [
+      "property",
+      "ownership",
+      "registry"
+    ],
+    "summary": "Defines property ownership verification requirements.",
+    "content": "Property ownership claims should be supported by officially recognized title and registry documentation.",
+    "importance": 0.95,
+    "related_sections": [
+      "IND-PRO-004"
+    ]
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "name": "Justice Ratio",
+  "style": "Rational legal analyst",
+  "strictness": 0.88,
+  "evidence_weight": 0.94,
+  "humanitarian_weight": 0.42,
+  "rationality_weight": 0.98,
+  "legal_formalism": 0.91,
+  "description": "Justice Ratio reasons from statute, evidence, chronology, and proportional legal outcomes. This judge avoids emotional overreach, rejects weak claims, and prefers clear legal causation."
+}

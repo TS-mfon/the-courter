@@ -1,0 +1,87 @@
+[
+  {
+    "country": "Brazil",
+    "category": "contract",
+    "section_id": "BRA-CON-001",
+    "title": "Breach of Contract Section 1",
+    "keywords": [
+      "contract",
+      "agreement",
+      "breach"
+    ],
+    "summary": "Defines breach of contract considerations.",
+    "content": "Contract disputes may require evidence of agreement existence, obligation failure, and measurable damages.",
+    "importance": 0.83,
+    "related_sections": [
+      "BRA-CON-001"
+    ]
+  },
+  {
+    "country": "Brazil",
+    "category": "contract",
+    "section_id": "BRA-CON-002",
+    "title": "Breach of Contract Section 2",
+    "keywords": [
+      "contract",
+      "agreement",
+      "breach"
+    ],
+    "summary": "Defines breach of contract considerations.",
+    "content": "Contract disputes may require evidence of agreement existence, obligation failure, and measurable damages.",
+    "importance": 0.86,
+    "related_sections": [
+      "BRA-CON-001"
+    ]
+  },
+  {
+    "country": "Brazil",
+    "category": "contract",
+    "section_id": "BRA-CON-003",
+    "title": "Breach of Contract Section 3",
+    "keywords": [
+      "contract",
+      "agreement",
+      "breach"
+    ],
+    "summary": "Defines breach of contract considerations.",
+    "content": "Contract disputes may require evidence of agreement existence, obligation failure, and measurable damages.",
+    "importance": 0.89,
+    "related_sections": [
+      "BRA-CON-002"
+    ]
+  },
+  {
+    "country": "Brazil",
+    "category": "contract",
+    "section_id": "BRA-CON-004",
+    "title": "Breach of Contract Section 4",
+    "keywords": [
+      "contract",
+      "agreement",
+      "breach"
+    ],
+    "summary": "Defines breach of contract considerations.",
+    "content": "Contract disputes may require evidence of agreement existence, obligation failure, and measurable damages.",
+    "importance": 0.92,
+    "related_sections": [
+      "BRA-CON-003"
+    ]
+  },
+  {
+    "country": "Brazil",
+    "category": "contract",
+    "section_id": "BRA-CON-005",
+    "title": "Breach of Contract Section 5",
+    "keywords": [
+      "contract",
+      "agreement",
+      "breach"
+    ],
+    "summary": "Defines breach of contract considerations.",
+    "content": "Contract disputes may require evidence of agreement existence, obligation failure, and measurable damages.",
+    "importance": 0.95,
+    "related_sections": [
+      "BRA-CON-004"
+    ]
+  }
+]

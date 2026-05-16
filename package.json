@@ -1,0 +1,14 @@
+{
+  "name": "the-courter",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The Courter: autonomous AI civil arbitration protocol on GenLayer.",
+  "scripts": {
+    "test": "pytest -q",
+    "api": "uvicorn apps.api.courter_api.main:app --reload",
+    "web": "npm --prefix apps/web run dev"
+  },
+  "workspaces": [
+    "apps/web"
+  ]
+}

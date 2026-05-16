@@ -1,0 +1,79 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { apiGet, type ApiCase } from "../lib/api";
+import { Panel, Shell, StepBadge, VerdictSeal } from "../ui";
+
+const stages = [
+  "Case Submitted",
+  "Curtains Close",
+  "Courtroom Darkens",
+  "Your Fate is in the Hands of The Jury",
+  "AI Reasoning Animation",
+  "Judge Silhouettes Appear",
+  "Gavel Strike",
+  "Verdict Reveal"
+];
+
+export default function CourtroomPage() {
+  const [activeCase, setActiveCase] = useState<ApiCase | null>(null);
+  const [stage, setStage] = useState(0);
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("case");
+    if (id) apiGet<ApiCase>(`/cases/${id}`).then(setActiveCase).catch(() => setActiveCase(null));
+  }, []);
+  useEffect(() => {
+    const timer = setInterval(() => setStage((current) => Math.min(stages.length - 1, current + 1)), 900);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <Shell title="Live Courtroom" kicker="Consensus deliberation">
+      {!activeCase ? (
+        <Panel>
+          <p>No case has entered the courtroom yet.</p>
+          <Link href="/file-case" className="mt-4 inline-block rounded bg-court-gold px-5 py-3 font-semibold text-black">File A Case</Link>
+        </Panel>
+      ) : (
+        <div className="grid gap-5 lg:grid-cols-[0.68fr_0.32fr]">
+          <Panel className="overflow-hidden">
+            <div className="relative min-h-[420px] rounded bg-black/70 p-8">
+              <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-court-crimson/60 to-transparent" />
+              <div className="absolute left-6 top-0 h-full w-16 bg-gradient-to-r from-court-crimson/70 to-transparent opacity-60" />
+              <div className="absolute right-6 top-0 h-full w-16 bg-gradient-to-l from-court-crimson/70 to-transparent opacity-60" />
+              <div className="relative z-10 grid min-h-[360px] place-items-center text-center">
+                <div>
+                  <StepBadge>{stages[stage]}</StepBadge>
+                  <p className="mt-6 font-serif text-4xl text-court-gold md:text-6xl">
+                    {stage < 7 ? "Your Fate is in the Hands of The Jury" : activeCase.verdict.finalized ? "Verdict Ready" : "GenLayer Contract Required"}
+                  </p>
+                  <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-4">
+                    {activeCase.verdict.judges_used.map((judge) => (
+                      <div key={judge} className="rounded-t-full border border-court-gold/30 bg-court-gold/10 p-5 pt-12 text-sm shadow-[0_0_45px_rgba(214,170,79,0.15)]">{judge}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Panel>
+          <Panel>
+            <h2 className="font-serif text-2xl text-court-gold">{activeCase.id}</h2>
+            <p className="mt-2 text-sm text-court-mist/60">{activeCase.country} / {activeCase.dispute_type} / {activeCase.court_type}</p>
+            <div className="mt-5 flex justify-center"><VerdictSeal confidence={activeCase.verdict.confidence} /></div>
+            <p className="mt-5 rounded border border-court-gold/30 bg-court-gold/10 p-4 font-serif text-2xl text-court-gold">
+              {activeCase.verdict.finalized ? `Winner: ${activeCase.verdict.winner}` : "No final verdict until GenLayer resolves this dispute"}
+            </p>
+            <p className="mt-4 font-serif text-xl text-court-gold">{activeCase.verdict.headline_verdict || activeCase.plain_english_verdict}</p>
+            <p className="mt-3 text-sm leading-6 text-court-mist/75">{activeCase.verdict.final_conclusion || activeCase.plain_english_verdict}</p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link href={`/case/${activeCase.id}`} className="rounded bg-court-gold px-4 py-2 font-semibold text-black">Open Case Record</Link>
+              <Link href="/appeals" className="rounded border border-court-gold px-4 py-2">Appeal Verdict</Link>
+            </div>
+          </Panel>
+        </div>
+      )}
+    </Shell>
+  );
+}

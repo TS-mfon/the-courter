@@ -1,0 +1,87 @@
+[
+  {
+    "country": "India",
+    "category": "inheritance",
+    "section_id": "IND-INH-001",
+    "title": "Inheritance Recognition Section 1",
+    "keywords": [
+      "inheritance",
+      "succession",
+      "family property"
+    ],
+    "summary": "Defines inheritance claim considerations.",
+    "content": "Inheritance claims may require proof of family relationship and legally recognized succession rights.",
+    "importance": 0.83,
+    "related_sections": [
+      "IND-INH-001"
+    ]
+  },
+  {
+    "country": "India",
+    "category": "inheritance",
+    "section_id": "IND-INH-002",
+    "title": "Inheritance Recognition Section 2",
+    "keywords": [
+      "inheritance",
+      "succession",
+      "family property"
+    ],
+    "summary": "Defines inheritance claim considerations.",
+    "content": "Inheritance claims may require proof of family relationship and legally recognized succession rights.",
+    "importance": 0.86,
+    "related_sections": [
+      "IND-INH-001"
+    ]
+  },
+  {
+    "country": "India",
+    "category": "inheritance",
+    "section_id": "IND-INH-003",
+    "title": "Inheritance Recognition Section 3",
+    "keywords": [
+      "inheritance",
+      "succession",
+      "family property"
+    ],
+    "summary": "Defines inheritance claim considerations.",
+    "content": "Inheritance claims may require proof of family relationship and legally recognized succession rights.",
+    "importance": 0.89,
+    "related_sections": [
+      "IND-INH-002"
+    ]
+  },
+  {
+    "country": "India",
+    "category": "inheritance",
+    "section_id": "IND-INH-004",
+    "title": "Inheritance Recognition Section 4",
+    "keywords": [
+      "inheritance",
+      "succession",
+      "family property"
+    ],
+    "summary": "Defines inheritance claim considerations.",
+    "content": "Inheritance claims may require proof of family relationship and legally recognized succession rights.",
+    "importance": 0.92,
+    "related_sections": [
+      "IND-INH-003"
+    ]
+  },
+  {
+    "country": "India",
+    "category": "inheritance",
+    "section_id": "IND-INH-005",
+    "title": "Inheritance Recognition Section 5",
+    "keywords": [
+      "inheritance",
+      "succession",
+      "family property"
+    ],
+    "summary": "Defines inheritance claim considerations.",
+    "content": "Inheritance claims may require proof of family relationship and legally recognized succession rights.",
+    "importance": 0.95,
+    "related_sections": [
+      "IND-INH-004"
+    ]
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "country": "Australia",
+    "category": "land",
+    "section_id": "AUS-LAN-001",
+    "title": "Ownership and Land Registration Section 1",
+    "keywords": [
+      "land",
+      "ownership",
+      "registration",
+      "title"
+    ],
+    "summary": "Defines ownership and registration requirements.",
+    "content": "Land ownership claims should be supported by legally recognized registration documents and valid transfer records.",
+    "importance": 0.83,
+    "related_sections": [
+      "AUS-LAN-001"
+    ]
+  },
+  {
+    "country": "Australia",
+    "category": "land",
+    "section_id": "AUS-LAN-002",
+    "title": "Ownership and Land Registration Section 2",
+    "keywords": [
+      "land",
+      "ownership",
+      "registration",
+      "title"
+    ],
+    "summary": "Defines ownership and registration requirements.",
+    "content": "Land ownership claims should be supported by legally recognized registration documents and valid transfer records.",
+    "importance": 0.86,
+    "related_sections": [
+      "AUS-LAN-001"
+    ]
+  },
+  {
+    "country": "Australia",
+    "category": "land",
+    "section_id": "AUS-LAN-003",
+    "title": "Ownership and Land Registration Section 3",
+    "keywords": [
+      "land",
+      "ownership",
+      "registration",
+      "title"
+    ],
+    "summary": "Defines ownership and registration requirements.",
+    "content": "Land ownership claims should be supported by legally recognized registration documents and valid transfer records.",
+    "importance": 0.89,
+    "related_sections": [
+      "AUS-LAN-002"
+    ]
+  },
+  {
+    "country": "Australia",
+    "category": "land",
+    "section_id": "AUS-LAN-004",
+    "title": "Ownership and Land Registration Section 4",
+    "keywords": [
+      "land",
+      "ownership",
+      "registration",
+      "title"
+    ],
+    "summary": "Defines ownership and registration requirements.",
+    "content": "Land ownership claims should be supported by legally recognized registration documents and valid transfer records.",
+    "importance": 0.92,
+    "related_sections": [
+      "AUS-LAN-003"
+    ]
+  },
+  {
+    "country": "Australia",
+    "category": "land",
+    "section_id": "AUS-LAN-005",
+    "title": "Ownership and Land Registration Section 5",
+    "keywords": [
+      "land",
+      "ownership",
+      "registration",
+      "title"
+    ],
+    "summary": "Defines ownership and registration requirements.",
+    "content": "Land ownership claims should be supported by legally recognized registration documents and valid transfer records.",
+    "importance": 0.95,
+    "related_sections": [
+      "AUS-LAN-004"
+    ]
+  }
+]

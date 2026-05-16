@@ -1,0 +1,15 @@
+[Unit]
+Description=The Courter Telegram bot
+After=network.target courter-api.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/the-courter
+EnvironmentFile=/opt/the-courter/.env.production
+ExecStart=/opt/the-courter/.venv/bin/python /opt/the-courter/apps/telegram-bot/courter_bot/main.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

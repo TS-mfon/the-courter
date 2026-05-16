@@ -1,0 +1,92 @@
+[
+  {
+    "country": "Nigeria",
+    "category": "rental",
+    "section_id": "NIG-REN-001",
+    "title": "Tenant and Rental Rights Section 1",
+    "keywords": [
+      "tenant",
+      "rental",
+      "eviction",
+      "lease"
+    ],
+    "summary": "Defines rental dispute considerations.",
+    "content": "Rental disputes may consider written agreements, payment records, and documented obligations between parties.",
+    "importance": 0.83,
+    "related_sections": [
+      "NIG-REN-001"
+    ]
+  },
+  {
+    "country": "Nigeria",
+    "category": "rental",
+    "section_id": "NIG-REN-002",
+    "title": "Tenant and Rental Rights Section 2",
+    "keywords": [
+      "tenant",
+      "rental",
+      "eviction",
+      "lease"
+    ],
+    "summary": "Defines rental dispute considerations.",
+    "content": "Rental disputes may consider written agreements, payment records, and documented obligations between parties.",
+    "importance": 0.86,
+    "related_sections": [
+      "NIG-REN-001"
+    ]
+  },
+  {
+    "country": "Nigeria",
+    "category": "rental",
+    "section_id": "NIG-REN-003",
+    "title": "Tenant and Rental Rights Section 3",
+    "keywords": [
+      "tenant",
+      "rental",
+      "eviction",
+      "lease"
+    ],
+    "summary": "Defines rental dispute considerations.",
+    "content": "Rental disputes may consider written agreements, payment records, and documented obligations between parties.",
+    "importance": 0.89,
+    "related_sections": [
+      "NIG-REN-002"
+    ]
+  },
+  {
+    "country": "Nigeria",
+    "category": "rental",
+    "section_id": "NIG-REN-004",
+    "title": "Tenant and Rental Rights Section 4",
+    "keywords": [
+      "tenant",
+      "rental",
+      "eviction",
+      "lease"
+    ],
+    "summary": "Defines rental dispute considerations.",
+    "content": "Rental disputes may consider written agreements, payment records, and documented obligations between parties.",
+    "importance": 0.92,
+    "related_sections": [
+      "NIG-REN-003"
+    ]
+  },
+  {
+    "country": "Nigeria",
+    "category": "rental",
+    "section_id": "NIG-REN-005",
+    "title": "Tenant and Rental Rights Section 5",
+    "keywords": [
+      "tenant",
+      "rental",
+      "eviction",
+      "lease"
+    ],
+    "summary": "Defines rental dispute considerations.",
+    "content": "Rental disputes may consider written agreements, payment records, and documented obligations between parties.",
+    "importance": 0.95,
+    "related_sections": [
+      "NIG-REN-004"
+    ]
+  }
+]
