@@ -3,9 +3,11 @@ from fastapi import APIRouter
 from fastapi import Header, HTTPException
 
 from ..config import get_settings
+from courter_shared.judges import load_judge_profiles
 from ..services.evidence import ocr_status
 from ..services.payments import payment_rpc_health
 from ..services.repository import repo
+from ..services.retrieval import retrieve_legal_chunks
 
 router = APIRouter()
 
@@ -48,6 +50,17 @@ def system_health(x_admin_secret: str | None = Header(default=None)) -> dict:
         warnings.append("Telegram bot token missing")
     rpc_health = payment_rpc_health()
     ocr = ocr_status()
+    try:
+        judge_count = len(load_judge_profiles())
+        judge_registry = {"status": "healthy" if judge_count else "down", "count": judge_count}
+    except FileNotFoundError as exc:
+        judge_registry = {"status": "down", "count": 0, "error": str(exc)}
+    try:
+        law_probe = retrieve_legal_chunks("nigeria", "land", limit=1)
+        law_retrieval = {"status": "healthy" if law_probe else "degraded", "sample_country": "nigeria", "sample_category": "land"}
+    except FileNotFoundError as exc:
+        law_probe = []
+        law_retrieval = {"status": "down", "sample_country": "nigeria", "sample_category": "land", "error": str(exc)}
     backend_status = "healthy"
     database_status = "healthy" if repo.db_ready() else "degraded"
     contracts_status = "healthy"
@@ -68,6 +81,8 @@ def system_health(x_admin_secret: str | None = Header(default=None)) -> dict:
             "backend": {"status": backend_status},
             "database": {"status": database_status},
             "ocr": ocr,
+            "judge_registry": judge_registry,
+            "law_retrieval": law_retrieval,
             "payment_rpcs": rpc_health,
             "genlayer_contracts": {
                 "status": contracts_status,

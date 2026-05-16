@@ -13,6 +13,10 @@ from .repository import now_iso, repo
 from .retrieval import retrieve_legal_chunks
 
 
+class CourtConfigurationError(RuntimeError):
+    pass
+
+
 def reject_criminal_case(case: CaseIntake) -> bool:
     text = " ".join([case.dispute_type, case.claimant_statement, case.respondent_statement or ""]).lower()
     return any(term in text for term in CRIMINAL_REJECTION_TERMS)
@@ -95,6 +99,8 @@ def deliberate_case(
 ) -> tuple[Verdict, list[dict[str, Any]]]:
     prefer_rational = contradiction.contradiction_detected or contradiction.severity >= 0.6
     judges = select_judges(count=judge_count, excluded_ids=excluded_judges, prefer_rational=prefer_rational)
+    if not judges:
+        raise CourtConfigurationError("Judge registry unavailable for deliberation.")
     judge_reasoning = _judge_reasoning(judges, legal_chunks, contradiction, evidence)
     avg_confidence = sum(item.confidence for item in judge_reasoning) / len(judge_reasoning)
     confidence = max(0.51, min(0.98, avg_confidence - contradiction.severity * 0.12))

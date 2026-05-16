@@ -7,7 +7,7 @@ from courter_shared.constants import COURT_FEES_GEN
 
 from ..config import get_settings
 from ..services.audit import audit
-from ..services.courts import create_case_record, public_case_record, reject_criminal_case
+from ..services.courts import CourtConfigurationError, create_case_record, public_case_record, reject_criminal_case
 from ..services.evidence import detect_contradictions, evidence_quality, extract_text, fraud_report, reconstruct_timeline, structure_text_evidence
 from ..services.payments import consume_verified_payment, verify_payment
 from ..services.repository import repo
@@ -26,7 +26,11 @@ def create_case(case: CaseIntake) -> dict:
         raise HTTPException(status_code=400, detail={"message": "The Jury cannot review empty or vague claims. Add real civil facts, dates, document names, registry IDs, payments, or upload evidence.", "quality": quality})
     evidence = [structure_text_evidence(case.claimant_statement, case.country)]
     contradiction = detect_contradictions(evidence)
-    record = create_case_record(case=case, evidence=evidence, contradiction=contradiction, extracted_files=[], timeline=reconstruct_timeline(case.claimant_statement), fraud=fraud_report(evidence, case.claimant_statement))
+    try:
+        record = create_case_record(case=case, evidence=evidence, contradiction=contradiction, extracted_files=[], timeline=reconstruct_timeline(case.claimant_statement), fraud=fraud_report(evidence, case.claimant_statement))
+    except (CourtConfigurationError, FileNotFoundError) as exc:
+        audit("case_submission_blocked", actor_type="user", actor_id=case.username, entity_type="case", entity_id="draft", severity="critical", metadata={"reason": "court_configuration_unavailable", "error": str(exc)})
+        raise HTTPException(status_code=503, detail="The court configuration is unavailable right now. Try again shortly.") from exc
     return record
 
 
@@ -92,14 +96,18 @@ async def submit_case(
         raise HTTPException(status_code=400, detail={"message": "Evidence upload/OCR did not produce enough civil facts for judicial review.", "quality": post_ocr_quality})
     evidence = [structure_text_evidence(combined_text, country)]
     contradiction = detect_contradictions(evidence)
-    record = create_case_record(
-        case=case,
-        evidence=evidence,
-        contradiction=contradiction,
-        extracted_files=extracted,
-        timeline=reconstruct_timeline(combined_text),
-        fraud=fraud_report(evidence, combined_text),
-    )
+    try:
+        record = create_case_record(
+            case=case,
+            evidence=evidence,
+            contradiction=contradiction,
+            extracted_files=extracted,
+            timeline=reconstruct_timeline(combined_text),
+            fraud=fraud_report(evidence, combined_text),
+        )
+    except (CourtConfigurationError, FileNotFoundError) as exc:
+        audit("case_submission_blocked", actor_type="user", actor_id=username, entity_type="case", entity_id="draft", severity="critical", metadata={"reason": "court_configuration_unavailable", "error": str(exc)})
+        raise HTTPException(status_code=503, detail="The court configuration is unavailable right now. Try again shortly.") from exc
     consumption = consume_verified_payment(payment=payment.payment or {}, actor_id=username)
     if not consumption.ok:
         raise HTTPException(status_code=402, detail=consumption.public_message)

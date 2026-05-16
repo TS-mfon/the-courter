@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
+from courter_shared.paths import resolve_data_dir
 
 
 def retrieve_legal_chunks(country: str, category: str, limit: int = 5) -> list[dict]:
     category_path = "civil_arbitration" if category == "civil_arbitration" else category
     if category_path == "civil_arbitration":
         category_path = "contract"
-    path = PROJECT_ROOT / "laws" / country.lower() / category_path.lower() / f"{category_path.lower()}_chunks.json"
+    path = resolve_data_dir("laws") / country.lower() / category_path.lower() / f"{category_path.lower()}_chunks.json"
     if not path.exists():
         return []
     with path.open("r", encoding="utf-8") as handle:

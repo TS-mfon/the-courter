@@ -5,8 +5,9 @@ import json
 import re
 import subprocess
 import time
-from pathlib import Path
 from typing import Any
+
+from courter_shared.paths import resolve_project_root
 
 from ..config import get_settings
 from .audit import audit
@@ -18,7 +19,6 @@ RPC_URLS = {
     "testnet-bradbury": "https://rpc.bradbury.genlayer.com",
     "testnet-asimov": "https://rpc.asimov.genlayer.com",
 }
-ROOT = Path(__file__).resolve().parents[4]
 
 
 def contract_address(court_type: str) -> str | None:
@@ -127,8 +127,9 @@ def write_contract(court_type: str, method: str, payload: dict[str, Any], case_i
 
     script_payload = json.dumps({"address": address, "method": method, "payload": compact_payload})
     try:
+        root = resolve_project_root("scripts")
         completed = subprocess.run(
-            ["python3", str(ROOT / "scripts" / "write_studionet_contract.py")],
+            ["python3", str(root / "scripts" / "write_studionet_contract.py")],
             input=script_payload,
             check=False,
             capture_output=True,

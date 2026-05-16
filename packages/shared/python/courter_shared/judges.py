@@ -5,20 +5,22 @@ import random
 from pathlib import Path
 from typing import Any
 
+from .paths import resolve_data_dir
 
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
-JUDGES_DIR = PROJECT_ROOT / "judges"
+
+def judges_dir() -> Path:
+    return resolve_data_dir("judges")
 
 
 def load_judge_profile(name: str) -> dict[str, Any]:
-    path = JUDGES_DIR / f"{name}.json"
+    path = judges_dir() / f"{name}.json"
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 
 
 def load_judge_profiles() -> list[dict[str, Any]]:
     profiles: list[dict[str, Any]] = []
-    for path in sorted(JUDGES_DIR.glob("*.json")):
+    for path in sorted(judges_dir().glob("*.json")):
         with path.open("r", encoding="utf-8") as handle:
             profile = json.load(handle)
             profile["id"] = path.stem
