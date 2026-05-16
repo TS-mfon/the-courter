@@ -15,7 +15,13 @@ export async function apiPost<T>(path: string, body: unknown, init?: RequestInit
     ...init
   });
   if (!response.ok) {
-    const error = await response.json().catch(async () => ({ detail: await response.text() }));
+    const raw = await response.text();
+    let error: { detail?: unknown } = {};
+    try {
+      error = raw ? JSON.parse(raw) : {};
+    } catch {
+      error = { detail: raw };
+    }
     throw new Error(typeof error.detail === "string" ? error.detail : JSON.stringify(error));
   }
   return response.json();

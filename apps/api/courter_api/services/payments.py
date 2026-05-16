@@ -18,6 +18,7 @@ class PaymentVerification:
     public_message: str
     internal_reason: str
     receipt: dict
+    payment: dict | None = None
 
 
 def _development_receipt(tx_hash: str, sender_wallet: str, recipient_wallet: str, amount_gen: Decimal) -> dict:
@@ -208,6 +209,7 @@ def verify_payment(
     court_type: str,
     finalized: bool = True,
     actor_id: str = "anonymous",
+    consume: bool = False,
 ) -> PaymentVerification:
     del finalized
     settings = get_settings()
@@ -261,7 +263,7 @@ def verify_payment(
             severity="warning",
             metadata={"reason": reason, "court_type": court_type, "receipt": receipt},
         )
-        return PaymentVerification(False, _payment_message(reason), reason, receipt)
+        return PaymentVerification(False, _payment_message(reason), reason, receipt, None)
 
     payment = {
         "tx_hash": tx_hash,
@@ -274,6 +276,49 @@ def verify_payment(
         "receipt_amount_gen": float(receipt_amount) if receipt_amount is not None else None,
         "receipt": receipt,
     }
+    if consume:
+        repo.consume_payment(payment)
+        audit(
+            "payment_verified",
+            actor_type="user",
+            actor_id=actor_id,
+            entity_type="payment",
+            entity_id=tx_hash,
+            metadata=payment,
+        )
+        return PaymentVerification(True, "Payment verified. The treasury has received the required GEN.", "payment_verified", receipt, payment)
+
+    audit(
+        "payment_checked",
+        actor_type="user",
+        actor_id=actor_id,
+        entity_type="payment",
+        entity_id=tx_hash,
+        metadata=payment,
+    )
+    return PaymentVerification(
+        True,
+        f"{expected_amount} GEN has been received in the treasury. You can proceed to submit your case.",
+        "payment_checked",
+        receipt,
+        payment,
+    )
+
+
+def consume_verified_payment(*, payment: dict, actor_id: str = "anonymous") -> PaymentVerification:
+    tx_hash = str(payment["tx_hash"])
+    if repo.payment_consumed(tx_hash):
+        audit(
+            "payment_failed",
+            actor_type="user",
+            actor_id=actor_id,
+            entity_type="payment",
+            entity_id=tx_hash,
+            severity="warning",
+            metadata={"reason": "replayed_tx_hash", "court_type": payment.get("court_type"), "receipt": payment.get("receipt", {})},
+        )
+        return PaymentVerification(False, _payment_message("replayed_tx_hash"), "replayed_tx_hash", payment.get("receipt", {}), None)
+
     repo.consume_payment(payment)
     audit(
         "payment_verified",
@@ -283,4 +328,4 @@ def verify_payment(
         entity_id=tx_hash,
         metadata=payment,
     )
-    return PaymentVerification(True, "Payment verified. The treasury has received the required GEN.", "payment_verified", receipt)
+    return PaymentVerification(True, "Payment verified. The treasury has received the required GEN.", "payment_verified", payment.get("receipt", {}), payment)

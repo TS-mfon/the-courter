@@ -9,7 +9,7 @@ from ..config import get_settings
 from ..services.audit import audit
 from ..services.courts import create_case_record, public_case_record, reject_criminal_case
 from ..services.evidence import detect_contradictions, evidence_quality, extract_text, fraud_report, reconstruct_timeline, structure_text_evidence
-from ..services.payments import verify_payment
+from ..services.payments import consume_verified_payment, verify_payment
 from ..services.repository import repo
 
 router = APIRouter()
@@ -73,6 +73,7 @@ async def submit_case(
         amount_gen=amount,
         court_type=court_type,
         actor_id=username,
+        consume=False,
     )
     if not payment.ok:
         raise HTTPException(status_code=402, detail=payment.public_message)
@@ -99,6 +100,9 @@ async def submit_case(
         timeline=reconstruct_timeline(combined_text),
         fraud=fraud_report(evidence, combined_text),
     )
+    consumption = consume_verified_payment(payment=payment.payment or {}, actor_id=username)
+    if not consumption.ok:
+        raise HTTPException(status_code=402, detail=consumption.public_message)
     audit("case_submitted", actor_type="user", actor_id=username, entity_type="case", entity_id=record["id"], metadata={"court_type": court_type, "files": len(files)})
     return record
 

@@ -1,5 +1,5 @@
 from apps.api.courter_api.config import get_settings
-from apps.api.courter_api.services.payments import verify_payment
+from apps.api.courter_api.services.payments import consume_verified_payment, verify_payment
 from apps.api.courter_api.services.repository import repo
 from courter_shared.constants import TREASURY_WALLET
 
@@ -10,7 +10,7 @@ def setup_function() -> None:
     repo.audit_logs.clear()
 
 
-def test_valid_payment_consumes_tx() -> None:
+def test_valid_payment_check_does_not_consume_tx() -> None:
     result = verify_payment(
         tx_hash="0xvalidpayment001",
         sender_wallet="0xabc",
@@ -19,17 +19,32 @@ def test_valid_payment_consumes_tx() -> None:
         court_type="public",
     )
     assert result.ok is True
-    assert repo.payment_consumed("0xvalidpayment001")
+    assert repo.payment_consumed("0xvalidpayment001") is False
+    assert "You can proceed to submit your case." in result.public_message
+
+
+def test_consuming_a_checked_payment_marks_tx_used() -> None:
+    result = verify_payment(
+        tx_hash="0xvalidpayment001a",
+        sender_wallet="0xabc",
+        recipient_wallet=TREASURY_WALLET,
+        amount_gen=2,
+        court_type="public",
+    )
+    consumed = consume_verified_payment(payment=result.payment or {}, actor_id="tester")
+    assert consumed.ok is True
+    assert repo.payment_consumed("0xvalidpayment001a")
 
 
 def test_reused_tx_gets_warning_and_private_log() -> None:
-    verify_payment(
+    checked = verify_payment(
         tx_hash="0xvalidpayment002",
         sender_wallet="0xabc",
         recipient_wallet=TREASURY_WALLET,
         amount_gen=2,
         court_type="public",
     )
+    consume_verified_payment(payment=checked.payment or {}, actor_id="tester")
     result = verify_payment(
         tx_hash="0xvalidpayment002",
         sender_wallet="0xabc",
