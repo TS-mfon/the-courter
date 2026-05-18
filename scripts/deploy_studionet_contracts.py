@@ -129,7 +129,7 @@ def main() -> None:
     load_dotenv(ROOT / ".env.test")
     os.environ["COURTER_DEPLOY_VERBOSE"] = "1"
     patch_web3_contract_fn_compat()
-    private_key = os.environ["GENLAYER_PRIVATE_KEY"]
+    private_key = os.environ.get("GENLAYER_OPERATOR_PRIVATE_KEY") or os.environ["GENLAYER_PRIVATE_KEY"]
     client = create_client(chain=studionet, account=Account.from_key(private_key))
     results = {}
     for name, env_key, relative_path in CONTRACTS:

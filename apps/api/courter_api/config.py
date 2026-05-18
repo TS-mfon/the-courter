@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     treasury_wallet: str = Field(default="0x5905c9Dea6Ae52AA0947D8F7F218263889eDfC4E", alias="TREASURY_WALLET")
     operational_wallet: str | None = Field(default=None, alias="OPERATIONAL_WALLET")
     genlayer_private_key: str | None = Field(default=None, alias="GENLAYER_PRIVATE_KEY")
+    genlayer_operator_private_key: str | None = Field(default=None, alias="GENLAYER_OPERATOR_PRIVATE_KEY")
     genlayer_network: str = Field(default="testnet-bradbury", alias="GENLAYER_NETWORK")
     genlayer_contract_network: str = Field(default="studionet", alias="GENLAYER_CONTRACT_NETWORK")
     genlayer_payment_network: str = Field(default="testnet-bradbury", alias="GENLAYER_PAYMENT_NETWORK")

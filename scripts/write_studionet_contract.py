@@ -20,7 +20,8 @@ def main() -> None:
     load_dotenv(ROOT / ".env.test")
     request = json.loads(sys.stdin.read())
     patch_web3_contract_fn_compat()
-    client = create_client(chain=studionet, account=Account.from_key(os.environ["GENLAYER_PRIVATE_KEY"]))
+    operator_key = os.environ.get("GENLAYER_OPERATOR_PRIVATE_KEY") or os.environ["GENLAYER_PRIVATE_KEY"]
+    client = create_client(chain=studionet, account=Account.from_key(operator_key))
     tx_hash = client.write_contract(
         address=request["address"],
         function_name=request["method"],

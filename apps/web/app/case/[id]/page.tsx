@@ -7,13 +7,20 @@ import { Panel, Shell, Stat, VerdictSeal } from "../../ui";
 
 export default function CasePage({ params }: { params: { id: string } }) {
   const [caseRecord, setCaseRecord] = useState<ApiCase | null>(null);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     const load = () => apiGet<ApiCase>(`/cases/${params.id}`).then((data) => {
-      if (!cancelled) setCaseRecord(data);
-    }).catch(() => {
-      if (!cancelled) setCaseRecord(null);
+      if (!cancelled) {
+        setCaseRecord(data);
+        setLoadError("");
+      }
+    }).catch((error) => {
+      if (!cancelled) {
+        setCaseRecord(null);
+        setLoadError(error instanceof Error ? error.message : "This case is not available right now.");
+      }
     });
     load();
     const timer = setInterval(load, 12000);
@@ -27,7 +34,7 @@ export default function CasePage({ params }: { params: { id: string } }) {
     <Shell title="Case Record" kicker={params.id}>
       {!caseRecord ? (
         <Panel>
-          <p>This case is not in local court records.</p>
+          <p>{loadError || "This case is not in local court records."}</p>
           <Link href="/public-cases" className="mt-4 inline-block rounded bg-court-gold px-5 py-3 font-semibold text-black">View Public Cases</Link>
         </Panel>
       ) : (

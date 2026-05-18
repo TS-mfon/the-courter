@@ -28,12 +28,23 @@ export default function InternalChamberPage() {
   const [isUnlocked, setIsUnlocked] = useState(false);
 
   async function adminGet<T>(path: string): Promise<T> {
-    const response = await fetch(`${apiBase}${path}`, {
-      cache: "no-store",
-      headers: { "x-admin-secret": secret }
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${apiBase}${path}`, {
+        cache: "no-store",
+        headers: { "x-admin-secret": secret }
+      });
+    } catch {
+      throw new Error("Backend is down. Please try again later.");
+    }
     if (!response.ok) {
-      const error = await response.json().catch(async () => ({ detail: await response.text() }));
+      const raw = await response.text();
+      let error: { detail?: unknown } = {};
+      try {
+        error = raw ? JSON.parse(raw) : {};
+      } catch {
+        error = { detail: raw };
+      }
       throw new Error(typeof error.detail === "string" ? error.detail : "Admin request failed");
     }
     return response.json();

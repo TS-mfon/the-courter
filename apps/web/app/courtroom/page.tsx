@@ -19,15 +19,22 @@ const stages = [
 export default function CourtroomPage() {
   const [activeCase, setActiveCase] = useState<ApiCase | null>(null);
   const [stage, setStage] = useState(0);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("case");
     if (!id) return;
     let cancelled = false;
     const load = () => apiGet<ApiCase>(`/cases/${id}`).then((data) => {
-      if (!cancelled) setActiveCase(data);
-    }).catch(() => {
-      if (!cancelled) setActiveCase(null);
+      if (!cancelled) {
+        setActiveCase(data);
+        setLoadError("");
+      }
+    }).catch((error) => {
+      if (!cancelled) {
+        setActiveCase(null);
+        setLoadError(error instanceof Error ? error.message : "No case has entered the courtroom yet.");
+      }
     });
     load();
     const timer = setInterval(load, 12000);
@@ -45,7 +52,7 @@ export default function CourtroomPage() {
     <Shell title="Live Courtroom" kicker="Consensus deliberation">
       {!activeCase ? (
         <Panel>
-          <p>No case has entered the courtroom yet.</p>
+          <p>{loadError || "No case has entered the courtroom yet."}</p>
           <Link href="/file-case" className="mt-4 inline-block rounded bg-court-gold px-5 py-3 font-semibold text-black">File A Case</Link>
         </Panel>
       ) : (

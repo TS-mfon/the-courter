@@ -7,7 +7,16 @@ import { Panel, Shell, Stat } from "../ui";
 
 export default function PublicCasesPage() {
   const [cases, setCases] = useState<ApiCase[]>([]);
-  useEffect(() => { apiGet<{ cases: ApiCase[] }>("/cases/?public=true").then((data) => setCases(data.cases)).catch(() => setCases([])); }, []);
+  const [loadError, setLoadError] = useState("");
+  useEffect(() => {
+    apiGet<{ cases: ApiCase[] }>("/cases/?public=true").then((data) => {
+      setCases(data.cases);
+      setLoadError("");
+    }).catch((error) => {
+      setCases([]);
+      setLoadError(error instanceof Error ? error.message : "No public cases yet.");
+    });
+  }, []);
 
   return (
     <Shell title="Public Case Explorer" kicker="Transparency layer">
@@ -20,7 +29,7 @@ export default function PublicCasesPage() {
       <div className="mt-6 grid gap-4">
         {cases.length === 0 ? (
           <Panel>
-            <p>No public cases yet. File a case to publish the first court record.</p>
+            <p>{loadError || "No public cases yet. File a case to publish the first court record."}</p>
             <Link href="/file-case" className="mt-4 inline-block rounded bg-court-gold px-5 py-3 font-semibold text-black">File A Case</Link>
           </Panel>
         ) : cases.map((item) => (

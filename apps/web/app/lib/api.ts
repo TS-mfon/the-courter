@@ -1,28 +1,50 @@
-export const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api";
+export const apiBase = "/api";
+
+function parseErrorPayload(raw: string): { detail?: unknown } {
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return { detail: raw };
+  }
+}
+
+function normalizeErrorMessage(status: number, raw: string): string {
+  const error = parseErrorPayload(raw);
+  if (typeof error.detail === "string" && error.detail.trim()) return error.detail;
+  if (status >= 502) return "Backend is down. Please try again later.";
+  return raw || "Request failed.";
+}
 
 export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${apiBase}${path}`, { cache: "no-store" });
-  if (!response.ok) throw new Error(await response.text());
+  let response: Response;
+  try {
+    response = await fetch(`${apiBase}${path}`, { cache: "no-store" });
+  } catch {
+    throw new Error("Backend is down. Please try again later.");
+  }
+  if (!response.ok) {
+    const raw = await response.text();
+    throw new Error(normalizeErrorMessage(response.status, raw));
+  }
   return response.json();
 }
 
 export async function apiPost<T>(path: string, body: unknown, init?: RequestInit): Promise<T> {
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
-  const response = await fetch(`${apiBase}${path}`, {
-    method: "POST",
-    headers: isForm ? undefined : { "Content-Type": "application/json", ...(init?.headers || {}) },
-    body: isForm ? body : JSON.stringify(body),
-    ...init
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${apiBase}${path}`, {
+      method: "POST",
+      headers: isForm ? undefined : { "Content-Type": "application/json", ...(init?.headers || {}) },
+      body: isForm ? body : JSON.stringify(body),
+      ...init
+    });
+  } catch {
+    throw new Error("Backend is down. Please try again later.");
+  }
   if (!response.ok) {
     const raw = await response.text();
-    let error: { detail?: unknown } = {};
-    try {
-      error = raw ? JSON.parse(raw) : {};
-    } catch {
-      error = { detail: raw };
-    }
-    throw new Error(typeof error.detail === "string" ? error.detail : JSON.stringify(error));
+    throw new Error(normalizeErrorMessage(response.status, raw));
   }
   return response.json();
 }

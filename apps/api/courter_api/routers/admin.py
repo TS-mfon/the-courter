@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from fastapi import Header, HTTPException
+from eth_account import Account
 
 from ..config import get_settings
 from courter_shared.judges import load_judge_profiles
@@ -31,11 +32,20 @@ def system_health(x_admin_secret: str | None = Header(default=None)) -> dict:
     if x_admin_secret != get_settings().admin_secret:
         raise HTTPException(status_code=401, detail="Admin auth required")
     settings = get_settings()
+    operator_private_key = settings.genlayer_operator_private_key or settings.genlayer_private_key
+    operator_wallet = settings.operational_wallet
+    if not operator_wallet and operator_private_key:
+        try:
+            operator_wallet = Account.from_key(operator_private_key).address
+        except Exception:
+            operator_wallet = None
     warnings = []
     if not repo.db_ready():
         warnings.append("Supabase/PostgreSQL connection unavailable; using process memory fallback")
     if settings.operational_wallet and settings.operational_wallet.lower() == settings.treasury_wallet.lower():
         warnings.append("Treasury wallet equals operational wallet; separate before production")
+    elif operator_wallet and operator_wallet.lower() == settings.treasury_wallet.lower():
+        warnings.append("Treasury wallet equals contract operator wallet; separate before production")
     if not settings.genlayer_standard_court_address:
         warnings.append("Standard Court contract address missing")
     if not settings.genlayer_inner_court_address:
@@ -87,6 +97,7 @@ def system_health(x_admin_secret: str | None = Header(default=None)) -> dict:
             "genlayer_contracts": {
                 "status": contracts_status,
                 "network": settings.genlayer_contract_network,
+                "operator_wallet": operator_wallet,
                 "standard_court": settings.genlayer_standard_court_address,
                 "inner_court": settings.genlayer_inner_court_address,
                 "appeal_court": settings.genlayer_appeal_court_address,
