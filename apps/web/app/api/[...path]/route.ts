@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const upstreamBase = (process.env.COURTER_UPSTREAM_API_URL || "http://172.236.110.179:8001").replace(/\/+$/, "");
+const UPSTREAM_TIMEOUT_MS = 8000;
 
 async function proxy(request: NextRequest, path: string[]) {
   const search = request.nextUrl.search || "";
@@ -12,6 +13,8 @@ async function proxy(request: NextRequest, path: string[]) {
   headers.delete("host");
   headers.delete("connection");
   headers.delete("content-length");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
 
   try {
     const init: RequestInit = {
@@ -19,6 +22,7 @@ async function proxy(request: NextRequest, path: string[]) {
       headers,
       redirect: "manual",
       cache: "no-store",
+      signal: controller.signal,
     };
     if (!["GET", "HEAD"].includes(request.method)) {
       init.body = await request.arrayBuffer();
@@ -35,6 +39,8 @@ async function proxy(request: NextRequest, path: string[]) {
     });
   } catch {
     return NextResponse.json({ detail: "Backend is down. Please try again later." }, { status: 503 });
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
