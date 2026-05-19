@@ -38,11 +38,11 @@ def _judge_rationale(judge: dict[str, Any], contradiction: ContradictionReport, 
         "Rational legal analyst": "Reasoned from statute, chronology, and documentary causation before giving weight to unsupported assertions.",
         "Analytical": "Separated the facts into proof, timeline, and credibility signals before drawing a civil conclusion.",
         "Ownership focused": "Focused on title, transfer records, possession claims, and whether ownership proof was legally recognizable.",
-    }.get(style, "Applied the judge profile to the submitted civil record before reaching a conclusion.")
+    }.get(style, "Applied the review profile to the submitted commercial record before reaching a conclusion.")
     return [
         approach,
         f"{judge['name']} noted that {', '.join(evidence_notes)}.",
-        profile or f"{judge['name']} applied the assigned judicial profile.",
+        profile or f"{judge['name']} applied the assigned review profile.",
     ]
 
 
@@ -100,20 +100,20 @@ def deliberate_case(
     prefer_rational = contradiction.contradiction_detected or contradiction.severity >= 0.6
     judges = select_judges(count=judge_count, excluded_ids=excluded_judges, prefer_rational=prefer_rational)
     if not judges:
-        raise CourtConfigurationError("Judge registry unavailable for deliberation.")
+        raise CourtConfigurationError("Review profile registry unavailable.")
     judge_reasoning = _judge_reasoning(judges, legal_chunks, contradiction, evidence)
     avg_confidence = sum(item.confidence for item in judge_reasoning) / len(judge_reasoning)
     confidence = max(0.51, min(0.98, avg_confidence - contradiction.severity * 0.12))
     winner = "claimant" if confidence >= 0.62 else "split"
     headline_verdict = (
-        "The claimant has the stronger civil position."
+        "The claimant has the stronger documented commercial position."
         if winner == "claimant"
-        else "The record is too contested for a unilateral award."
+        else "The record is too contested for a unilateral commercial recommendation."
     )
     final_conclusion = (
-        "Across the selected judge profiles, the claimant's documentary position remained stronger than the competing account when measured against the cited laws."
+        "Across the selected review profiles, the claimant's documentary position remained stronger than the competing account when measured against the cited rules and evidence."
         if winner == "claimant"
-        else "Across the selected judge profiles, the contradictions and evidentiary gaps prevented a single party from carrying the civil burden cleanly."
+        else "Across the selected review profiles, the contradictions and evidentiary gaps prevented a single party from carrying the commercial burden cleanly."
     )
     law_citations = _law_citations(legal_chunks, judge_reasoning[0].judge, limit=min(5, len(legal_chunks))) if judge_reasoning else []
     evidence_overview = "; ".join(
@@ -133,14 +133,14 @@ def deliberate_case(
         judges_used=[judge["name"] for judge in judges],
         laws_used=[chunk.get("section_id", chunk.get("id", "unknown")) for chunk in legal_chunks[:6]],
         reasoning_summary=[
-            "The court reviewed structured evidence, chronology signals, and contradiction severity before weighing the law.",
-            "Each selected judge profile produced an independent reasoning track grounded in the retrieved legal sections.",
-            "The final conclusion reflects the majority direction across those judge panels and remains appealable unless superseded by later court flow.",
+            "The resolution engine reviewed structured evidence, chronology signals, and contradiction severity before weighing the governing rules.",
+            "Each selected review profile produced an independent reasoning track grounded in the retrieved legal sections.",
+            "The final conclusion reflects the majority direction across those review profiles and remains eligible for escalation under the agreed workflow.",
         ],
         contradictions=contradiction.issues,
         headline_verdict=headline_verdict,
         final_conclusion=final_conclusion,
-        filing_summary=evidence[0].document_type.replace("_", " ").title() if evidence else "Civil filing",
+        filing_summary=evidence[0].document_type.replace("_", " ").title() if evidence else "Commercial filing",
         evidence_overview=evidence_overview,
         judge_panels=judge_reasoning,
         law_citations=law_citations,
@@ -205,8 +205,8 @@ def _pending_copy(verdict: Verdict) -> dict[str, Any]:
     data = verdict.model_dump()
     data["finalized"] = False
     data["reasoning_summary"] = [
-        "The contract was triggered on submission and the draft verdict below is already available.",
-        "GenLayer finality is still pending, so the case will keep refreshing until the onchain result is confirmed.",
+        "The contract was triggered on submission and the draft decision below is already available.",
+        "GenLayer finality is still pending, so the decision record will keep refreshing until the onchain result is confirmed.",
     ]
     return data
 
@@ -236,25 +236,25 @@ def refresh_case_finalization(record: dict[str, Any]) -> dict[str, Any]:
     final_verdict = contract_judgment or current_verdict
     if contract_finalized:
         final_verdict["finalized"] = True
-        final_verdict.setdefault("headline_verdict", current_verdict.get("headline_verdict", "Final verdict ready."))
-        final_verdict.setdefault("final_conclusion", current_verdict.get("final_conclusion", "The court finalized the onchain result."))
-        final_verdict.setdefault("filing_summary", current_verdict.get("filing_summary", record.get("dispute_type", "Civil filing")))
+        final_verdict.setdefault("headline_verdict", current_verdict.get("headline_verdict", "Final decision ready."))
+        final_verdict.setdefault("final_conclusion", current_verdict.get("final_conclusion", "The resolution engine finalized the onchain result."))
+        final_verdict.setdefault("filing_summary", current_verdict.get("filing_summary", record.get("dispute_type", "Commercial filing")))
         final_verdict.setdefault("evidence_overview", current_verdict.get("evidence_overview", ""))
         final_verdict.setdefault("judge_panels", current_verdict.get("judge_panels", []))
         final_verdict.setdefault("law_citations", current_verdict.get("law_citations", []))
         record["status"] = "finalized"
         record["verdict"] = final_verdict
-        record["plain_english_verdict"] = final_verdict.get("headline_verdict", current_verdict.get("headline_verdict", "Final verdict ready."))
+        record["plain_english_verdict"] = final_verdict.get("headline_verdict", current_verdict.get("headline_verdict", "Final decision ready."))
         audit("verdict_generated", actor_type="system", actor_id="court-engine", entity_type="case", entity_id=record["id"], metadata={"winner": final_verdict.get("winner"), "confidence": final_verdict.get("confidence"), "contract_finalized": True})
     else:
         record["status"] = "awaiting_genlayer_contract"
         current_verdict["finalized"] = False
         current_verdict["reasoning_summary"] = [
-            "The contract was triggered on submission and the draft verdict below is already available.",
-            "GenLayer finality is still pending, so the case will keep refreshing until the onchain result is confirmed.",
+            "The contract was triggered on submission and the draft decision below is already available.",
+            "GenLayer finality is still pending, so the decision record will keep refreshing until the onchain result is confirmed.",
         ]
         record["verdict"] = current_verdict
-        record["plain_english_verdict"] = current_verdict.get("headline_verdict", "Draft verdict available while finality completes.")
+        record["plain_english_verdict"] = current_verdict.get("headline_verdict", "Draft decision available while finality completes.")
         audit("verdict_pending", actor_type="system", actor_id="court-engine", entity_type="case", entity_id=record["id"], severity="warning", metadata={"winner": current_verdict.get("winner"), "confidence": current_verdict.get("confidence"), "contract_finalized": False, "tx_hash": tx_hash})
 
     repo.save_case(record)

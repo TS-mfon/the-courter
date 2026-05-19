@@ -5,15 +5,19 @@ import Link from "next/link";
 import { apiGet, type ApiCase } from "../lib/api";
 import { Panel, Shell, StepBadge, VerdictSeal } from "../ui";
 
+function profileLabel(name: string) {
+  return name.startsWith("Justice ") ? `${name.replace(/^Justice\s+/, "")} profile` : name;
+}
+
 const stages = [
-  "Case Submitted",
-  "Curtains Close",
-  "Courtroom Darkens",
-  "Your Fate is in the Hands of The Jury",
-  "AI Reasoning Animation",
-  "Judge Silhouettes Appear",
-  "Gavel Strike",
-  "Verdict Reveal"
+  "Submission received",
+  "Payment confirmed",
+  "Evidence structured",
+  "Rules retrieved",
+  "Review profiles applied",
+  "Decision draft assembled",
+  "GenLayer finality pending",
+  "Decision ready"
 ];
 
 export default function CourtroomPage() {
@@ -49,11 +53,11 @@ export default function CourtroomPage() {
   }, []);
 
   return (
-    <Shell title="Live Courtroom" kicker="Consensus deliberation">
+    <Shell title="Live Review" kicker="Consensus-backed decision flow">
       {!activeCase ? (
         <Panel>
-          <p>{loadError || "No case has entered the courtroom yet."}</p>
-          <Link href="/file-case" className="mt-4 inline-block rounded bg-court-gold px-5 py-3 font-semibold text-black">File A Case</Link>
+          <p>{loadError || "No dispute review is active right now."}</p>
+          <Link href="/file-case" className="mt-4 inline-block rounded bg-court-gold px-5 py-3 font-semibold text-black">Start A Review</Link>
         </Panel>
       ) : (
         <div className="grid gap-5 lg:grid-cols-[0.68fr_0.32fr]">
@@ -66,11 +70,11 @@ export default function CourtroomPage() {
                 <div>
                   <StepBadge>{stages[stage]}</StepBadge>
                   <p className="mt-6 font-serif text-4xl text-court-gold md:text-6xl">
-                    {stage < 7 ? "Your Fate is in the Hands of The Jury" : activeCase.verdict.finalized ? "Verdict Ready" : "Draft Verdict Ready"}
+                    {stage < 7 ? "Commercial review in progress" : activeCase.verdict.finalized ? "Decision Ready" : "Draft Decision Ready"}
                   </p>
                   <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-4">
                     {activeCase.verdict.judges_used.map((judge) => (
-                      <div key={judge} className="rounded-t-full border border-court-gold/30 bg-court-gold/10 p-5 pt-12 text-sm shadow-[0_0_45px_rgba(214,170,79,0.15)]">{judge}</div>
+                      <div key={judge} className="rounded-t-full border border-court-gold/30 bg-court-gold/10 p-5 pt-12 text-sm shadow-[0_0_45px_rgba(214,170,79,0.15)]">{profileLabel(judge)}</div>
                     ))}
                   </div>
                 </div>
@@ -82,13 +86,13 @@ export default function CourtroomPage() {
             <p className="mt-2 text-sm text-court-mist/60">{activeCase.country} / {activeCase.dispute_type} / {activeCase.court_type}</p>
             <div className="mt-5 flex justify-center"><VerdictSeal confidence={activeCase.verdict.confidence} /></div>
             <p className="mt-5 rounded border border-court-gold/30 bg-court-gold/10 p-4 font-serif text-2xl text-court-gold">
-              {activeCase.verdict.finalized ? `Winner: ${activeCase.verdict.winner}` : `Draft Winner: ${activeCase.verdict.winner}`}
+              {activeCase.verdict.finalized ? `Recommended outcome: ${activeCase.verdict.winner}` : `Draft outcome: ${activeCase.verdict.winner}`}
             </p>
             <p className="mt-4 font-serif text-xl text-court-gold">{activeCase.verdict.headline_verdict || activeCase.plain_english_verdict}</p>
             <p className="mt-3 text-sm leading-6 text-court-mist/75">{activeCase.verdict.final_conclusion || activeCase.plain_english_verdict}</p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Link href={`/case/${activeCase.id}`} className="rounded bg-court-gold px-4 py-2 font-semibold text-black">Open Case Record</Link>
-              <Link href="/appeals" className="rounded border border-court-gold px-4 py-2">Appeal Verdict</Link>
+              <Link href={`/case/${activeCase.id}`} className="rounded bg-court-gold px-4 py-2 font-semibold text-black">Open Decision Record</Link>
+              <Link href="/appeals" className="rounded border border-court-gold px-4 py-2">Escalate Review</Link>
             </div>
           </Panel>
         </div>

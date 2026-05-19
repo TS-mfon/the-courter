@@ -1,10 +1,10 @@
 export const treasuryWallet = "0x5905c9Dea6Ae52AA0947D8F7F218263889eDfC4E";
 
 export const courts = [
-  { id: "public", name: "Public Court", fee: 2, purpose: "Standard civil disputes" },
-  { id: "inner", name: "Inner Court", fee: 5, purpose: "Elite judicial reasoning" },
-  { id: "appeal", name: "Appeal Court", fee: 5, purpose: "Secondary judicial review" },
-  { id: "shadow_council", name: "Shadow Council", fee: 10, purpose: "Governance override" }
+  { id: "public", name: "Standard Review", fee: 2, purpose: "Routine vendor, invoice, and services disputes" },
+  { id: "inner", name: "Complex Review", fee: 5, purpose: "Higher-friction claims with heavier evidence sets" },
+  { id: "appeal", name: "Escalation Review", fee: 5, purpose: "Second-pass review under the agreed ADR workflow" },
+  { id: "shadow_council", name: "Governance Review", fee: 10, purpose: "Administrative override for approved operators" }
 ] as const;
 
 export const bradburyNetwork = {
@@ -15,53 +15,53 @@ export const bradburyNetwork = {
 } as const;
 
 export const countries = ["Nigeria", "India", "Brazil", "Kenya", "Indonesia", "Australia"];
-export const disputeTypes = ["Land", "Property", "Rental", "Inheritance", "Contract", "Civil Arbitration"];
+export const disputeTypes = ["Contract", "Vendor Payment", "Procurement", "Milestone", "SLA", "Service Delivery"];
 
 export const testCaseExamples = [
   {
-    id: "land-nigeria",
-    title: "Nigeria land certificate dispute",
+    id: "vendor-payment-nigeria",
+    title: "Vendor payment holdback",
     country: "Nigeria",
-    disputeType: "Land",
-    claimant: "I bought Plot 18 at Lekki Phase II in 2021. The seller transferred possession and gave me a land certificate. Owner: Adaobi Eze. Registry: REG-88341. I paid in full on 2021-08-12 and have survey plan, transfer receipt, and witness statements.",
-    respondent: "The respondent says the land was never properly transferred and claims the certificate is invalid because a family consent letter from 2020 was missing.",
-    evidenceSummary: "Land certificate dated 2021-08-12, survey plan, bank transfer receipt, family consent letter issue, registry search from Lagos, timeline of possession from 2021 to 2025."
+    disputeType: "Vendor Payment",
+    claimant: "Our team delivered the final API integration and post-launch support for a procurement portal on 2026-02-14. The buyer accepted staging, approved production go-live, and confirmed closure of critical defects, but withheld the last 20% milestone payment.",
+    respondent: "The buyer says final acceptance was conditional on extra analytics dashboards, but those dashboards were not part of the signed scope or milestone acceptance checklist.",
+    evidenceSummary: "Master services agreement, statement of work, milestone acceptance email, invoice INV-2044, change request log, delivery checklist, payment schedule, and two meeting notes confirming go-live approval."
   },
   {
-    id: "rental-kenya",
-    title: "Rental deposit refund",
+    id: "milestone-kenya",
+    title: "Implementation milestone dispute",
     country: "Kenya",
-    disputeType: "Rental",
-    claimant: "I rented Apartment B4 from 2024-01-01 to 2025-01-01. I paid a two month deposit and vacated on time after inspection. The landlord still withheld the deposit.",
-    respondent: "The landlord says there was damage to doors and unpaid utility charges but has not produced invoices or an inspection report signed on move-out day.",
-    evidenceSummary: "Lease agreement, deposit receipt, move-in photos, move-out inspection messages, utility payment screenshots, dates of handover and refund demand."
+    disputeType: "Milestone",
+    claimant: "We completed milestone 3 of an ERP rollout for a distribution company and submitted training logs, deployment notes, and sign-off requests. The customer continues to use the deployed module but has refused the milestone payment.",
+    respondent: "The customer argues that user adoption targets were not met, even though the signed milestone schedule only required deployment, handover, and administrator training.",
+    evidenceSummary: "Project plan, milestone matrix, training attendance sheet, deployment approval, support ticket closure summary, and invoice due on 2026-03-01."
   },
   {
-    id: "inheritance-india",
-    title: "Inheritance and will conflict",
+    id: "sla-india",
+    title: "Managed service SLA breach claim",
     country: "India",
-    disputeType: "Inheritance",
-    claimant: "My late father signed a will in 2019 naming me beneficiary of the family house. Probate reference PRB-22091 was opened in 2024. I also have tax receipts showing he remained in control until death.",
-    respondent: "My sibling claims a later handwritten document from 2023 overrides the will, but the signature date conflicts with hospital admission records.",
-    evidenceSummary: "Registered will, probate filing, hospital records, property tax receipts, timeline contradiction about the 2023 handwritten document, witness statements."
+    disputeType: "SLA",
+    claimant: "Our company purchased a managed uptime package with service credits if monthly availability dropped below 99.5%. Monitoring records show two separate outages and a net availability of 98.7%, but the provider rejected the credit request.",
+    respondent: "The provider says one outage fell inside a maintenance window and the other was caused by the claimant's own firewall policy, so no credits should apply.",
+    evidenceSummary: "Signed SLA, uptime logs, outage timeline, maintenance notice, incident report, support thread, and monthly service invoice."
   },
   {
-    id: "contract-brazil",
-    title: "Contract non-payment",
+    id: "procurement-brazil",
+    title: "Procurement delivery acceptance dispute",
     country: "Brazil",
-    disputeType: "Contract",
-    claimant: "I delivered a software integration under a signed services agreement on 2025-02-14. The client accepted staging and production delivery but refused to pay the final invoice.",
-    respondent: "The client says the deliverables were incomplete, yet internal emails show acceptance and a go-live approval before the invoice due date.",
-    evidenceSummary: "Signed contract, scope of work, invoice INV-2044, acceptance email trail, deployment checklist, due date 2025-03-01, partial payment history."
+    disputeType: "Procurement",
+    claimant: "We supplied 120 rugged field tablets under a procurement order and delivered them in two batches with signed warehouse receipts. The buyer accepted the shipment and distributed the devices internally but rejected the final payment after deployment.",
+    respondent: "The buyer says 18 devices failed after deployment and argues the supplier must replace them before final payment is released.",
+    evidenceSummary: "Purchase order, delivery notes, warehouse sign-off, serial number list, defect report, warranty clause, replacement timeline, and outstanding invoice."
   },
   {
-    id: "property-australia",
-    title: "Property sale timeline conflict",
+    id: "services-australia",
+    title: "Service delivery and change-order dispute",
     country: "Australia",
-    disputeType: "Property",
-    claimant: "I paid a reservation deposit for a property sale in Melbourne and later the seller resold the same property to another buyer. The seller gave me a signed receipt and sale memorandum first.",
-    respondent: "The seller claims my deposit lapsed, but their messages on 2025-04-21 confirmed the deal was still active after the alleged lapse date.",
-    evidenceSummary: "Signed sale memorandum, deposit receipt, duplicate receipt concern, bank transfer proof, message timeline, competing buyer agreement date, ownership statements."
+    disputeType: "Service Delivery",
+    claimant: "We were engaged to deliver a compliance reporting workflow and completed the original scope. The client requested additional approval routing, accepted the revised delivery date, then treated the extra work as part of the original fixed fee.",
+    respondent: "The client argues the extra approval routing was implied by the initial brief and therefore not chargeable as a separate change request.",
+    evidenceSummary: "Initial proposal, signed services agreement, change-order email, revised delivery plan, acceptance recording, invoice for additional scope, and approval workflow screenshots."
   }
 ] as const;
 

@@ -44,16 +44,9 @@ SUPPORTED_EVIDENCE_TYPES = {
 }
 
 PAYMENT_WARNING_RESPONSES = [
-    "Do Not Annoy The Jury",
-    "You will be Arrested if you try Scam",
-    "The Jury has seen this fake transaction before.",
-    "Nice try, but the gavel checks the blockchain.",
-    "Your payment evidence is wearing a fake mustache.",
-    "The Court Clerk rejects this suspicious magic trick.",
-    "This tx hash has already testified in another case.",
-    "The Treasury did not receive your offering, counselor.",
-    "The Jury smells unpaid GEN in this courtroom.",
-    "This transaction is not guilty of being real.",
-    "You cannot bribe the courtroom with imaginary GEN.",
-    "Case dismissed until your payment stops pretending.",
+    "Payment verification failed for this transaction.",
+    "This transaction hash has already been consumed.",
+    "The treasury wallet did not receive the expected amount.",
+    "The Bradbury receipt does not match the submitted sender wallet.",
+    "The transaction is not usable for this dispute submission.",
 ]

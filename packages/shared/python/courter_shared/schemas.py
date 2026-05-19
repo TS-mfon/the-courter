@@ -8,6 +8,11 @@ class CaseIntake(BaseModel):
     court_type: str = "public"
     claimant_statement: str
     respondent_statement: str | None = None
+    workflow_type: str | None = None
+    counterparty_name: str | None = None
+    contract_reference: str | None = None
+    claim_value_summary: str | None = None
+    agreement_confirmed: bool = False
 
 
 class StructuredEvidence(BaseModel):

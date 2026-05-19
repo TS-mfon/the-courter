@@ -5,12 +5,26 @@ from courter_shared.paths import resolve_data_dir
 
 
 def retrieve_legal_chunks(country: str, category: str, limit: int = 5) -> list[dict]:
-    category_path = "civil_arbitration" if category == "civil_arbitration" else category
-    if category_path == "civil_arbitration":
-        category_path = "contract"
+    normalized = category.lower().replace(" ", "_")
+    category_aliases = {
+        "civil_arbitration": "contract",
+        "vendor_payment": "contract",
+        "procurement": "contract",
+        "milestone": "contract",
+        "sla": "contract",
+        "service_delivery": "contract",
+    }
+    category_path = category_aliases.get(normalized, normalized)
     path = resolve_data_dir("laws") / country.lower() / category_path.lower() / f"{category_path.lower()}_chunks.json"
     if not path.exists():
-        return []
+        if category_path != "contract":
+            fallback = resolve_data_dir("laws") / country.lower() / "contract" / "contract_chunks.json"
+            if fallback.exists():
+                path = fallback
+            else:
+                return []
+        else:
+            return []
     with path.open("r", encoding="utf-8") as handle:
         chunks = json.load(handle)
     ranked = sorted(chunks, key=lambda chunk: chunk.get("importance", 0), reverse=True)[:limit]

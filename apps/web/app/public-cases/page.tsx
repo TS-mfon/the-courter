@@ -19,7 +19,7 @@ export default function PublicCasesPage() {
   }, []);
 
   return (
-    <Shell title="Public Case Explorer" kicker="Transparency layer">
+    <Shell title="Decision Records" kicker="Commercial ADR record layer">
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="Public Cases" value={cases.length} />
         <Stat label="Appeals" value={cases.filter((item) => item.status === "appealed").length} />
@@ -29,8 +29,8 @@ export default function PublicCasesPage() {
       <div className="mt-6 grid gap-4">
         {cases.length === 0 ? (
           <Panel>
-            <p>{loadError || "No public cases yet. File a case to publish the first court record."}</p>
-            <Link href="/file-case" className="mt-4 inline-block rounded bg-court-gold px-5 py-3 font-semibold text-black">File A Case</Link>
+            <p>{loadError || "No decision records yet. Start a review to publish the first commercial ADR record."}</p>
+            <Link href="/file-case" className="mt-4 inline-block rounded bg-court-gold px-5 py-3 font-semibold text-black">Start A Review</Link>
           </Panel>
         ) : cases.map((item) => (
           <Panel key={item.id}>

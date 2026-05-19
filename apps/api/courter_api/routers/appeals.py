@@ -52,7 +52,17 @@ def create_appeal(payload: AppealRequest) -> dict:
     contradiction = detect_contradictions(evidence)
     chunks = retrieve_legal_chunks(original["country"], original["dispute_type"], limit=8)
     verdict, reasoning = deliberate_case(case, evidence, contradiction, chunks, excluded_judges=original_judges)
-    contract_payload = {"original_case": original, "appeal_grounds": payload.grounds, "appeal_verdict": verdict.model_dump(), "judge_reasoning": reasoning}
+    contract_payload = {
+        "case_input": original.get("input", {}),
+        "original_case": original,
+        "original_verdict": original.get("verdict", {}),
+        "appeal_grounds": payload.grounds,
+        "appeal_verdict": verdict.model_dump(),
+        "appeal_judges": verdict.judges_used,
+        "laws_used": verdict.laws_used,
+        "contradictions": contradiction.issues,
+        "judge_reasoning": reasoning,
+    }
     write = write_contract("appeal", "submit_appeal", contract_payload, payload.case_id)
     receipt = finalized_receipt(write["tx_hash"], payload.case_id)
     original["status"] = "appealed"

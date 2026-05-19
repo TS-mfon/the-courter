@@ -32,7 +32,7 @@ class ShadowCouncil(gl.Contract):
         sender = gl.message.sender_address
         member = self.members[sender]
         if not member.active:
-            raise gl.UserError("Only For Council Members")
+            raise gl.UserError("Only active governance reviewers may vote")
         existing = self.votes[proposal_id][sender]
         if existing:
             raise gl.UserError("Wallet has already voted")

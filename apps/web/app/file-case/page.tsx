@@ -13,7 +13,12 @@ export default function FileCasePage() {
   const [recoveryKey, setRecoveryKey] = useState("");
   const [court, setCourt] = useState("public");
   const [country, setCountry] = useState("Nigeria");
-  const [disputeType, setDisputeType] = useState("Land");
+  const [disputeType, setDisputeType] = useState("Contract");
+  const [workflowType, setWorkflowType] = useState("procurement");
+  const [counterpartyName, setCounterpartyName] = useState("");
+  const [contractReference, setContractReference] = useState("");
+  const [claimValueSummary, setClaimValueSummary] = useState("");
+  const [agreementConfirmed, setAgreementConfirmed] = useState(false);
   const [claimant, setClaimant] = useState("");
   const [respondent, setRespondent] = useState("");
   const [evidenceSummary, setEvidenceSummary] = useState("");
@@ -49,9 +54,14 @@ export default function FileCasePage() {
     if (!example) return;
     setCountry(example.country);
     setDisputeType(example.disputeType);
+    setWorkflowType(example.disputeType.toLowerCase().replace(/ /g, "_"));
     setClaimant(example.claimant);
     setRespondent(example.respondent);
     setEvidenceSummary(example.evidenceSummary);
+    setCounterpartyName(example.title);
+    setContractReference(`TEMPLATE-${example.id.toUpperCase()}`);
+    setClaimValueSummary("Use template values for demo only");
+    setAgreementConfirmed(true);
     setMessage(`Loaded example: ${example.title}`);
     setWarning("");
   }
@@ -87,24 +97,43 @@ export default function FileCasePage() {
     setMessage("");
     setWarning("");
     if (!identity) return setMessage("Create or recover your anonymous identity first.");
-    if (!isCivil) return setMessage("The Courter only accepts civil arbitration. Criminal or violent claims are rejected.");
-    if (!claimant.trim() || !evidenceSummary.trim()) return setMessage("Add your claim and evidence summary so the jury has facts to review.");
+    if (!agreementConfirmed) return setMessage("Confirm that both parties agreed in advance to use this private dispute workflow.");
+    if (!isCivil) return setMessage("This workflow is for private commercial disputes, not criminal or violent matters.");
+    if (!claimant.trim() || !evidenceSummary.trim()) return setMessage("Add your claim and evidence summary so the review panel has concrete commercial facts.");
     if (!senderWallet.startsWith("0x")) return setMessage("Enter the wallet that sent the GEN payment.");
     if (!txHash.startsWith("0x")) return setMessage("Enter the transaction hash for the GEN payment.");
+    const structuredClaimant = [
+      `Workflow type: ${workflowType}.`,
+      counterpartyName ? `Counterparty: ${counterpartyName}.` : "",
+      contractReference ? `Contract reference: ${contractReference}.` : "",
+      claimValueSummary ? `Claim value summary: ${claimValueSummary}.` : "",
+      "Both parties agreed in advance to use this ADR workflow.",
+      claimant,
+    ].filter(Boolean).join(" ");
+    const structuredEvidenceSummary = [
+      evidenceSummary,
+      contractReference ? `Reference: ${contractReference}.` : "",
+      claimValueSummary ? `Claim size: ${claimValueSummary}.` : "",
+    ].filter(Boolean).join(" ");
     const form = new FormData();
     form.append("username", identity.username);
     form.append("country", country);
     form.append("dispute_type", disputeType);
     form.append("court_type", court);
-    form.append("claimant_statement", claimant);
+    form.append("claimant_statement", structuredClaimant);
     form.append("respondent_statement", respondent);
-    form.append("evidence_summary", evidenceSummary);
+    form.append("evidence_summary", structuredEvidenceSummary);
+    form.append("workflow_type", workflowType);
+    form.append("counterparty_name", counterpartyName);
+    form.append("contract_reference", contractReference);
+    form.append("claim_value_summary", claimValueSummary);
+    form.append("agreement_confirmed", agreementConfirmed ? "true" : "false");
     form.append("tx_hash", txHash);
     form.append("sender_wallet", senderWallet);
     fileObjects.forEach((file) => form.append("files", file));
     try {
       setSubmitting(true);
-      setMessage("The court is verifying payment, processing evidence, retrieving law, selecting judges, and submitting to GenLayer.");
+      setMessage("The platform is verifying payment, structuring evidence, ranking applicable rules, applying review profiles, and submitting the decision flow to GenLayer.");
       const created = await apiPost<{ id: string }>("/cases/submit", form);
       router.push(`/courtroom?case=${created.id}`);
     } catch (error) {
@@ -119,12 +148,12 @@ export default function FileCasePage() {
   }
 
   return (
-    <Shell title="File A Civil Case" kicker="Guided court intake">
+    <Shell title="Start A Commercial Dispute Review" kicker="Pre-agreed ADR intake">
       <div className="grid gap-5 lg:grid-cols-[0.72fr_0.28fr]">
         <div className="grid gap-5">
           <Panel>
             <StepBadge>Step 1 - Anonymous Identity</StepBadge>
-            <h2 className="mt-3 font-serif text-2xl text-court-gold">Create or restore your court identity</h2>
+            <h2 className="mt-3 font-serif text-2xl text-court-gold">Create or restore your workspace identity</h2>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               <input className="rounded border border-white/10 bg-black/40 px-3 py-3" placeholder="Username" value={username} onChange={(event) => setUsername(event.target.value)} />
               <input className="rounded border border-white/10 bg-black/40 px-3 py-3" placeholder="Recovery key if returning" value={recoveryKey} onChange={(event) => setRecoveryKey(event.target.value)} />
@@ -134,18 +163,38 @@ export default function FileCasePage() {
               <div className="mt-4 rounded border border-court-gold/30 bg-court-gold/10 p-3 text-sm">
                 <p>Identity active: <b>{identity.username}</b></p>
                 <p className="mt-1 break-all">Recovery key: {identity.recoveryKey}</p>
-                <p className="mt-1 break-all">Hidden embedded wallet: {identity.hiddenWallet}</p>
+                <p className="mt-1 break-all">Local workspace wallet fingerprint: {identity.hiddenWallet}</p>
               </div>
             ) : null}
           </Panel>
 
           <Panel>
-            <StepBadge>Step 2 - Court And Dispute</StepBadge>
-            <h2 className="mt-3 font-serif text-2xl text-court-gold">Choose the court and load a test case if needed</h2>
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <StepBadge>Step 2 - ADR Scope</StepBadge>
+            <h2 className="mt-3 font-serif text-2xl text-court-gold">Confirm the dispute belongs in a pre-agreed commercial ADR workflow</h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
               <select className="rounded border border-white/10 bg-black/40 px-3 py-3" value={court} onChange={(event) => setCourt(event.target.value)}>
                 {courts.slice(0, 2).map((item) => <option key={item.id} value={item.id}>{item.name} - {item.fee} GEN</option>)}
               </select>
+              <select className="rounded border border-white/10 bg-black/40 px-3 py-3" value={workflowType} onChange={(event) => setWorkflowType(event.target.value)}>
+                {["procurement", "vendor_payment", "milestone", "sla", "service_delivery"].map((item) => <option key={item} value={item}>{item.replace(/_/g, " ")}</option>)}
+              </select>
+              <input className="rounded border border-white/10 bg-black/40 px-3 py-3" placeholder="Counterparty name" value={counterpartyName} onChange={(event) => setCounterpartyName(event.target.value)} />
+              <input className="rounded border border-white/10 bg-black/40 px-3 py-3" placeholder="Contract / PO / SOW reference" value={contractReference} onChange={(event) => setContractReference(event.target.value)} />
+              <input className="rounded border border-white/10 bg-black/40 px-3 py-3" placeholder="Claim value summary e.g. USD 8,500 outstanding" value={claimValueSummary} onChange={(event) => setClaimValueSummary(event.target.value)} />
+              <div className="rounded border border-white/10 bg-black/20 px-3 py-3 text-sm text-court-mist/80">
+                This workflow is intended for procurement, vendor, milestone, SLA, invoice, and service-delivery disputes where both parties opted in beforehand.
+              </div>
+            </div>
+            <label className="mt-4 flex items-start gap-3 rounded border border-white/10 bg-black/20 p-3 text-sm text-court-mist/80">
+              <input type="checkbox" checked={agreementConfirmed} onChange={(event) => setAgreementConfirmed(event.target.checked)} className="mt-1" />
+              <span>I confirm both parties agreed in advance to use this private dispute resolution workflow and understand the resulting decision record does not automatically replace local legal enforcement.</span>
+            </label>
+          </Panel>
+
+          <Panel>
+            <StepBadge>Step 3 - Dispute Intake</StepBadge>
+            <h2 className="mt-3 font-serif text-2xl text-court-gold">Choose jurisdiction, dispute type, and load a test case if needed</h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
               <select className="rounded border border-white/10 bg-black/40 px-3 py-3" value={country} onChange={(event) => setCountry(event.target.value)}>
                 {countries.map((item) => <option key={item}>{item}</option>)}
               </select>
@@ -168,12 +217,12 @@ export default function FileCasePage() {
           </Panel>
 
           <Panel>
-            <StepBadge>Step 3 - Evidence</StepBadge>
+            <StepBadge>Step 4 - Evidence</StepBadge>
             <div className="mt-4 grid gap-3">
-              <textarea className="min-h-28 rounded border border-white/10 bg-black/40 p-3" placeholder="What happened? State the civil claim clearly." value={claimant} onChange={(event) => setClaimant(event.target.value)} />
-              <textarea className="min-h-24 rounded border border-white/10 bg-black/40 p-3" placeholder="Respondent position, if known." value={respondent} onChange={(event) => setRespondent(event.target.value)} />
-              <textarea className="min-h-28 rounded border border-white/10 bg-black/40 p-3" placeholder="Evidence summary: document names, dates, registry numbers, ownership timeline." value={evidenceSummary} onChange={(event) => setEvidenceSummary(event.target.value)} />
-              <p className="text-sm text-court-mist/70">Uploads are optional. Typed facts alone are enough if they include real civil details.</p>
+              <textarea className="min-h-28 rounded border border-white/10 bg-black/40 p-3" placeholder="What happened? State the commercial claim clearly." value={claimant} onChange={(event) => setClaimant(event.target.value)} />
+              <textarea className="min-h-24 rounded border border-white/10 bg-black/40 p-3" placeholder="Counterparty position, if known." value={respondent} onChange={(event) => setRespondent(event.target.value)} />
+              <textarea className="min-h-28 rounded border border-white/10 bg-black/40 p-3" placeholder="Evidence summary: contract clause, invoice, milestone, acceptance note, SLA metric, payment date." value={evidenceSummary} onChange={(event) => setEvidenceSummary(event.target.value)} />
+              <p className="text-sm text-court-mist/70">Uploads are optional. Typed facts alone are enough if they include real commercial details.</p>
               <input type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.txt" className="rounded border border-white/10 bg-black/40 px-3 py-3" onChange={(event) => {
                 const selected = Array.from(event.target.files || []);
                 setFileObjects(selected);
@@ -184,7 +233,7 @@ export default function FileCasePage() {
           </Panel>
 
           <Panel>
-            <StepBadge>Step 4 - Payment Verification</StepBadge>
+            <StepBadge>Step 5 - Payment Verification</StepBadge>
             <p className="mt-3 text-sm text-court-mist/70">Send exactly <b>{selectedCourt.fee} GEN</b> on <b>{bradburyNetwork.label}</b> to the treasury wallet, then submit the transaction hash and sender wallet.</p>
             <p className="mt-2 text-sm text-court-mist/70">Primary verifier RPC: <span className="text-court-gold">{bradburyNetwork.primaryRpc}</span></p>
             <p className="mt-1 text-sm text-court-mist/70">Fallback verifier RPC: <span className="text-court-gold">{bradburyNetwork.fallbackRpc}</span></p>
@@ -199,7 +248,7 @@ export default function FileCasePage() {
                 Check Payment On Bradbury
               </button>
               <button className="rounded bg-court-gold px-5 py-3 font-semibold text-black disabled:cursor-not-allowed disabled:opacity-60" disabled={submitting} onClick={submitCase}>
-              {submitting ? "Submitting To The Jury..." : "Submit Case To The Jury"}
+              {submitting ? "Submitting For Review..." : "Submit For Review"}
               </button>
             </div>
             {paymentCheck ? <p className="mt-4 rounded border border-court-gold/30 bg-court-gold/10 p-3 text-sm">{paymentCheck}</p> : null}
@@ -215,10 +264,10 @@ export default function FileCasePage() {
             <h3 className="font-serif text-xl text-court-gold">What Happens Next</h3>
             <ol className="mt-3 grid gap-2 text-sm text-court-mist/70">
               <li>Evidence is structured.</li>
-              <li>Contradictions are detected.</li>
-              <li>Relevant laws are retrieved.</li>
-              <li>3 judges are selected.</li>
-              <li>The courtroom opens and verdict is revealed.</li>
+              <li>Commercial contradictions are detected.</li>
+              <li>Relevant laws and contract-style rules are retrieved.</li>
+              <li>Three review profiles are selected.</li>
+              <li>A decision record is published and can later be escalated.</li>
             </ol>
           </Panel>
           <Panel>

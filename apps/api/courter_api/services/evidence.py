@@ -183,7 +183,7 @@ def evidence_quality(text: str, file_count: int = 0) -> dict:
     score += 0.1 if file_count > 0 else 0
     issues = []
     if len(words) < 18:
-        issues.append("The claim is too short for judicial review.")
+        issues.append("The submission is too short for commercial dispute review.")
     if repeated_ratio < 0.45:
         issues.append("The claim appears repetitive or low-information.")
     if not keyword_hits and file_count == 0:

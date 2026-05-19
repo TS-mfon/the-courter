@@ -16,8 +16,9 @@ class AppealCourt(gl.Contract):
     def submit_appeal(self, appeal_payload: str) -> str:
         self.appeal_count += 1
         payload = json.loads(appeal_payload)
-        original = payload.get("original_verdict", {})
+        original = payload.get("original_verdict", {}) or {}
         winner = original.get("winner", "claimant")
+        workflow_type = (payload.get("case_input") or {}).get("workflow_type", "contract")
         return json.dumps(
             {
                 "winner": winner,
@@ -25,11 +26,15 @@ class AppealCourt(gl.Contract):
                 "judges_used": payload.get("appeal_judges", []),
                 "laws_used": payload.get("laws_used", []),
                 "reasoning_summary": [
-                    "Appeal Court reviewed the original finalized verdict and appeal payload.",
-                    "Appeal judges are expected to differ from the original panel.",
-                    "The appeal verdict is finalized and remains eligible for Shadow Council escalation.",
+                    "The leader reviewed the original decision, escalation grounds, and refreshed profile set.",
+                    "Only the finalized leader result is stored onchain; supporting profile perspectives remain part of the offchain case record.",
+                    "The escalation result is final for the ADR workflow unless a governance review is explicitly opened.",
                 ],
                 "contradictions": payload.get("contradictions", []),
+                "headline_verdict": "Escalation review complete.",
+                "final_conclusion": f"The {workflow_type.replace('_', ' ')} dispute has completed its second-pass review under the agreed ADR workflow.",
+                "decision_type": "commercial_resolution",
+                "review_track": "escalation_review",
                 "appealable": False,
                 "finalized": True,
             },

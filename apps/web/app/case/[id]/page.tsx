@@ -5,6 +5,10 @@ import Link from "next/link";
 import { apiGet, type ApiCase } from "../../lib/api";
 import { Panel, Shell, Stat, VerdictSeal } from "../../ui";
 
+function profileLabel(name: string) {
+  return name.startsWith("Justice ") ? `${name.replace(/^Justice\s+/, "")} profile` : name;
+}
+
 export default function CasePage({ params }: { params: { id: string } }) {
   const [caseRecord, setCaseRecord] = useState<ApiCase | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -31,7 +35,7 @@ export default function CasePage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   return (
-    <Shell title="Case Record" kicker={params.id}>
+    <Shell title="Decision Record" kicker={params.id}>
       {!caseRecord ? (
         <Panel>
           <p>{loadError || "This case is not in local court records."}</p>
@@ -41,10 +45,10 @@ export default function CasePage({ params }: { params: { id: string } }) {
         <div className="grid gap-5 lg:grid-cols-[0.66fr_0.34fr]">
           <div className="grid gap-5">
             <Panel>
-              <h2 className="font-serif text-3xl text-court-gold">Final Verdict</h2>
+              <h2 className="font-serif text-3xl text-court-gold">Resolution Outcome</h2>
               {!caseRecord.verdict.finalized ? (
                 <div className="mt-4 rounded border border-court-crimson/50 bg-court-crimson/15 p-4">
-                  <p className="font-serif text-2xl text-court-gold">Draft Verdict Live, Finality Pending</p>
+                  <p className="font-serif text-2xl text-court-gold">Draft Decision Live, Finality Pending</p>
                   <p className="mt-2 text-sm leading-6 text-court-mist/75">{caseRecord.plain_english_verdict}</p>
                 </div>
               ) : (
@@ -55,7 +59,7 @@ export default function CasePage({ params }: { params: { id: string } }) {
               )}
               <div className="mt-5 grid gap-3 text-sm text-court-mist/75 md:grid-cols-2">
                 <div className="rounded border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs uppercase tracking-[0.18em] text-court-mist/50">Filing Summary</p>
+                  <p className="text-xs uppercase tracking-[0.18em] text-court-mist/50">Commercial Summary</p>
                   <p className="mt-2">{caseRecord.verdict.filing_summary || caseRecord.dispute_type}</p>
                 </div>
                 <div className="rounded border border-white/10 bg-white/[0.03] p-3">
@@ -66,13 +70,13 @@ export default function CasePage({ params }: { params: { id: string } }) {
             </Panel>
 
             <Panel>
-              <h2 className="font-serif text-2xl text-court-gold">Judge Reasoning</h2>
+              <h2 className="font-serif text-2xl text-court-gold">Review Panel Analysis</h2>
               <div className="mt-4 grid gap-4">
                 {caseRecord.verdict.judge_panels.map((panel) => (
                   <section key={panel.judge} className="rounded border border-white/10 bg-white/[0.03] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h3 className="font-serif text-xl text-court-gold">{panel.judge}</h3>
+                        <h3 className="font-serif text-xl text-court-gold">{profileLabel(panel.judge)}</h3>
                         <p className="mt-1 text-sm leading-6 text-court-mist/75">{panel.profile}</p>
                       </div>
                       <span className="rounded border border-court-gold/30 bg-court-gold/10 px-3 py-1 text-sm text-court-gold">
@@ -110,17 +114,17 @@ export default function CasePage({ params }: { params: { id: string } }) {
 
           <div className="grid content-start gap-4">
             <Panel><VerdictSeal confidence={caseRecord.verdict.confidence} /></Panel>
-            <Stat label="Winner" value={caseRecord.verdict.winner} />
-            <Stat label="Court" value={caseRecord.court_type} />
+            <Stat label="Recommended Outcome" value={caseRecord.verdict.winner} />
+            <Stat label="Review Track" value={caseRecord.court_type} />
             <Stat label="OCR" value={caseRecord.ocr?.degraded ? "degraded" : `${caseRecord.ocr?.files_processed || 0} files`} />
             <Panel>
-              <h3 className="font-serif text-xl text-court-gold">Reasoning Summary</h3>
+              <h3 className="font-serif text-xl text-court-gold">Decision Summary</h3>
               <ul className="mt-3 grid gap-2 text-sm text-court-mist/75">
                 {caseRecord.verdict.reasoning_summary.map((item) => <li key={item}>- {item}</li>)}
               </ul>
             </Panel>
             <Panel>
-              <h3 className="font-serif text-xl text-court-gold">Contradictions Considered</h3>
+              <h3 className="font-serif text-xl text-court-gold">Conflicts Considered</h3>
               <div className="mt-3 grid gap-2">
                 {caseRecord.verdict.contradictions.length ? caseRecord.verdict.contradictions.map((issue) => (
                   <p key={issue} className="rounded border border-court-crimson/30 bg-court-crimson/10 px-3 py-2 text-sm">{issue}</p>

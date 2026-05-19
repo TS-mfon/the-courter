@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Gavel, Landmark, Scale, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, FileSearch, Scale, ShieldCheck, Workflow } from "lucide-react";
 
 export function Shell({ title, kicker, children }: { title: string; kicker?: string; children: React.ReactNode }) {
   return (
@@ -7,15 +7,13 @@ export function Shell({ title, kicker, children }: { title: string; kicker?: str
       <nav className="sticky top-0 z-50 border-b border-white/10 bg-black/70 px-4 py-3 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 text-sm">
           <Link href="/" className="mr-3 flex items-center gap-2 font-serif text-xl text-court-gold">
-            <Landmark size={22} /> The Courter
+            <BriefcaseBusiness size={22} /> The Courter
           </Link>
           {[
-            ["/file-case", "File Case"],
-            ["/courtroom", "Courtroom"],
-            ["/appeals", "Appeals"],
-            ["/public-cases", "Public Cases"],
-            ["/shadow-council", "Shadow Council"],
-            ["/judges", "Judges"],
+            ["/file-case", "Start Review"],
+            ["/public-cases", "Decision Records"],
+            ["/appeals", "Escalations"],
+            ["/judges", "Review Profiles"],
             ["/governance/analytics", "Analytics"]
           ].map(([href, label]) => (
             <Link key={href} className="rounded px-2 py-1 text-court-mist/75 hover:bg-white/10 hover:text-white" href={href}>{label}</Link>
@@ -59,9 +57,9 @@ export function Stat({ label, value }: { label: string; value: string | number }
 export function CourtFlow() {
   return (
     <div className="grid gap-3 md:grid-cols-5">
-      {["Public Court", "Inner Court", "Appeal Court", "Shadow Council", "Final Verdict"].map((item, index) => (
+      {["Agreement", "Intake", "Evidence Review", "GenLayer Decision", "Escalation"].map((item, index) => (
         <div key={item} className="rounded border border-court-gold/30 bg-court-panel/80 p-4 text-center">
-          {index === 3 ? <Shield className="mx-auto mb-2 text-court-crimson" /> : index === 4 ? <Sparkles className="mx-auto mb-2 text-court-gold" /> : <Gavel className="mx-auto mb-2 text-court-gold" />}
+          {index === 0 ? <ShieldCheck className="mx-auto mb-2 text-court-gold" /> : index === 2 ? <FileSearch className="mx-auto mb-2 text-court-gold" /> : <Workflow className="mx-auto mb-2 text-court-gold" />}
           <p className="font-serif">{item}</p>
         </div>
       ))}

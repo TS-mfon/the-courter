@@ -25,7 +25,7 @@ export default function ShadowCouncilPage() {
     try {
       const proposal = await apiPost<Proposal>("/shadow-council/proposals", { case_id: caseId, username: "court-user", tx_hash: txHash, sender_wallet: wallet || "0xsender" });
       setProposals([proposal, ...proposals]);
-      setMessage("Shadow Council proposal opened. Weighted voting may begin.");
+      setMessage("Governance review opened. Weighted voting may begin.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Proposal creation failed.");
     }
@@ -42,11 +42,11 @@ export default function ShadowCouncilPage() {
   }
 
   return (
-    <Shell title="Shadow Council" kicker="Sacred governance chamber">
+    <Shell title="Governance Review" kicker="Restricted operator override flow">
       <div className="grid gap-5 lg:grid-cols-[0.62fr_0.38fr]">
         <Panel>
           <StepBadge>Governance Override - 10 GEN</StepBadge>
-          <h2 className="mt-3 font-serif text-3xl text-court-gold">Open a council review</h2>
+          <h2 className="mt-3 font-serif text-3xl text-court-gold">Open a governance review</h2>
           <div className="mt-4 grid gap-3">
             <select className="rounded border border-white/10 bg-black/40 px-3 py-3" value={caseId} onChange={(event) => setCaseId(event.target.value)}>
               {cases.map((item) => <option key={item.id} value={item.id}>{item.id}</option>)}
@@ -57,9 +57,9 @@ export default function ShadowCouncilPage() {
           <p className="mt-4 break-all text-sm text-court-mist/60">Treasury: {treasuryWallet}</p>
         </Panel>
         <Panel>
-          <h3 className="font-serif text-2xl text-court-gold">Council Wallet</h3>
-          <input className="mt-4 w-full rounded border border-white/10 bg-black/40 px-3 py-3" placeholder="Whitelisted council wallet" value={wallet} onChange={(event) => setWallet(event.target.value)} />
-          <p className="mt-3 text-sm text-court-mist/60">Only whitelisted wallets can vote. One vote per wallet per proposal.</p>
+          <h3 className="font-serif text-2xl text-court-gold">Reviewer Wallet</h3>
+          <input className="mt-4 w-full rounded border border-white/10 bg-black/40 px-3 py-3" placeholder="Whitelisted governance wallet" value={wallet} onChange={(event) => setWallet(event.target.value)} />
+          <p className="mt-3 text-sm text-court-mist/60">Only whitelisted governance wallets can vote. One vote per wallet per proposal.</p>
           {message ? <p className="mt-4 rounded border border-court-gold/30 bg-court-gold/10 p-3 text-sm">{message}</p> : null}
         </Panel>
       </div>

@@ -19,11 +19,13 @@ router = APIRouter()
 def create_case(case: CaseIntake) -> dict:
     if reject_criminal_case(case):
         audit("case_rejected", actor_type="user", actor_id=case.username, entity_type="case", entity_id="draft", severity="warning", metadata={"reason": "criminal_or_violent"})
-        raise HTTPException(status_code=400, detail="The Courter only supports civil arbitration.")
+        raise HTTPException(status_code=400, detail="This workflow only supports private commercial disputes, not criminal or public-law matters.")
+    if not case.agreement_confirmed:
+        raise HTTPException(status_code=400, detail="Both parties must have agreed in advance to use this private dispute workflow.")
     quality = evidence_quality(case.claimant_statement, 0)
     if not quality["acceptable"]:
         audit("case_rejected", actor_type="user", actor_id=case.username, entity_type="case", entity_id="draft", severity="warning", metadata={"reason": "insufficient_evidence", "quality": quality})
-        raise HTTPException(status_code=400, detail={"message": "The Jury cannot review empty or vague claims. Add real civil facts, dates, document names, registry IDs, payments, or upload evidence.", "quality": quality})
+        raise HTTPException(status_code=400, detail={"message": "The review panel needs concrete commercial facts. Add dates, contract references, invoices, milestones, payment history, or supporting evidence.", "quality": quality})
     evidence = [structure_text_evidence(case.claimant_statement, case.country)]
     contradiction = detect_contradictions(evidence)
     try:
@@ -43,6 +45,11 @@ async def submit_case(
     claimant_statement: str = Form(...),
     respondent_statement: str = Form(""),
     evidence_summary: str = Form(""),
+    workflow_type: str = Form("contract"),
+    counterparty_name: str = Form(""),
+    contract_reference: str = Form(""),
+    claim_value_summary: str = Form(""),
+    agreement_confirmed: bool = Form(False),
     tx_hash: str = Form(...),
     sender_wallet: str = Form(...),
     files: list[UploadFile] = File(default=[]),
@@ -60,14 +67,21 @@ async def submit_case(
         court_type=court_type,
         claimant_statement=claimant_statement,
         respondent_statement=respondent_statement,
+        workflow_type=workflow_type,
+        counterparty_name=counterparty_name or None,
+        contract_reference=contract_reference or None,
+        claim_value_summary=claim_value_summary or None,
+        agreement_confirmed=agreement_confirmed,
     )
     if reject_criminal_case(case):
-        raise HTTPException(status_code=400, detail="The Courter only supports civil arbitration.")
+        raise HTTPException(status_code=400, detail="This workflow only supports private commercial disputes, not criminal or public-law matters.")
+    if not agreement_confirmed:
+        raise HTTPException(status_code=400, detail="Both parties must have agreed in advance to use this private dispute workflow.")
 
     pre_payment_quality = evidence_quality(" ".join([claimant_statement, respondent_statement, evidence_summary]), len(files))
     if not pre_payment_quality["acceptable"]:
         audit("case_rejected", actor_type="user", actor_id=username, entity_type="case", entity_id="draft", severity="warning", metadata={"reason": "insufficient_evidence", "quality": pre_payment_quality})
-        raise HTTPException(status_code=400, detail={"message": "The Jury cannot review empty or vague claims. Add real civil facts, dates, document names, registry IDs, payments, or supporting uploads before paying.", "quality": pre_payment_quality})
+        raise HTTPException(status_code=400, detail={"message": "The review panel needs concrete commercial facts. Add dates, contract references, invoices, milestones, payment history, or supporting uploads before paying.", "quality": pre_payment_quality})
 
     amount = COURT_FEES_GEN.get(court_type, 2)
     payment = verify_payment(
@@ -93,7 +107,7 @@ async def submit_case(
     post_ocr_quality = evidence_quality(combined_text, len(extracted))
     if not post_ocr_quality["acceptable"]:
         audit("case_rejected", actor_type="user", actor_id=username, entity_type="case", entity_id="draft", severity="warning", metadata={"reason": "insufficient_evidence_after_ocr", "quality": post_ocr_quality})
-        raise HTTPException(status_code=400, detail={"message": "Evidence upload/OCR did not produce enough civil facts for judicial review.", "quality": post_ocr_quality})
+        raise HTTPException(status_code=400, detail={"message": "Evidence upload/OCR did not produce enough commercial facts for review.", "quality": post_ocr_quality})
     evidence = [structure_text_evidence(combined_text, country)]
     contradiction = detect_contradictions(evidence)
     try:
