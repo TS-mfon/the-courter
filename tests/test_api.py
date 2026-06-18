@@ -20,6 +20,7 @@ def test_case_flow_returns_finalized_verdict() -> None:
             dispute_type="land",
             court_type="public",
             claimant_statement="I hold the land certificate REG-291 signed in 2021 with ownership transfer records, payment receipt, and registry confirmation from the land office.",
+            agreement_confirmed=True,
         )
     )
     assert body["status"] in {"finalized", "awaiting_genlayer_contract"}
@@ -84,6 +85,7 @@ def test_case_flow_returns_controlled_error_when_judge_registry_unavailable(monk
                 dispute_type="land",
                 court_type="public",
                 claimant_statement="I hold the land certificate REG-291 signed in 2021 with ownership transfer records, registry confirmation from the land office, payment receipt, witness statements, and survey plan references for Plot 14.",
+                agreement_confirmed=True,
             )
         )
 
@@ -118,6 +120,7 @@ def test_pending_case_keeps_draft_winner_visible(monkeypatch: pytest.MonkeyPatch
             dispute_type="land",
             court_type="public",
             claimant_statement="I hold the land certificate REG-291 signed in 2021 with ownership transfer records, payment receipt, and registry confirmation from the land office.",
+            agreement_confirmed=True,
         )
     )
 

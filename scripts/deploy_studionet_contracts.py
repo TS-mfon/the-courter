@@ -119,7 +119,12 @@ def deployed_address(receipt: dict) -> str:
     address = data.get("contract_address") or (data.get("contract_snapshot") or {}).get("contract_address")
     if not address:
         raise RuntimeError("Deployment finalized without a contract address")
-    schema = rpc("gen_getContractSchema", [address])
+    schema = {}
+    for _ in range(15):
+        schema = rpc("gen_getContractSchema", [address])
+        if not schema.get("error"):
+            break
+        time.sleep(2)
     if schema.get("error"):
         raise RuntimeError(json.dumps(schema["error"], sort_keys=True))
     return address
@@ -131,8 +136,15 @@ def main() -> None:
     patch_web3_contract_fn_compat()
     private_key = os.environ.get("GENLAYER_OPERATOR_PRIVATE_KEY") or os.environ["GENLAYER_PRIVATE_KEY"]
     client = create_client(chain=studionet, account=Account.from_key(private_key))
+    selected = {
+        name.strip()
+        for name in os.environ.get("COURTER_DEPLOY_CONTRACTS", "").split(",")
+        if name.strip()
+    }
     results = {}
     for name, env_key, relative_path in CONTRACTS:
+        if selected and name not in selected:
+            continue
         code = (ROOT / relative_path).read_text(encoding="utf-8")
         tx_hash = client.deploy_contract(code=code, args=[])
         print(json.dumps({"name": name, "tx_hash": tx_hash, "status": "submitted"}, sort_keys=True), flush=True)
